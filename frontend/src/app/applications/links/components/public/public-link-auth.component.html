@@ -1,0 +1,39 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="link-page">
+  <div class="header">
+    <a routerLink="">
+      <img alt="" height="40" [src]="logoUrl">
+    </a>
+  </div>
+  <img (click)="validPassword()" alt="" class="cursor-pointer" [src]="linkProtected" height="96">
+  <div class="d-flex mt-2 ms-auto me-auto" style="width: 250px">
+    <div class="input-group">
+    <span class="input-group-text bg-gray-light">
+      <fa-icon [icon]="icons.faKey"></fa-icon>
+    </span>
+      <input [(ngModel)]="password"
+             (keyup.enter)="validPassword()"
+             autocomplete="off"
+             class="form-control border-0"
+             [placeholder]="'Password' | translate:locale.language"
+             type="password">
+      <button [disabled]="!password?.length"
+              (click)="validPassword()"
+              class="btn btn-default btn-custom border-0"
+              type="button">
+        <fa-icon [icon]="icons.faSignInAlt"></fa-icon>
+      </button>
+    </div>
+  </div>
+  <div class="error-text no-select">
+    <span class="hr"></span>
+    <div>
+      <span class="solve" l10nTranslate>This share is protected by a password</span>
+    </div>
+  </div>
+</div>

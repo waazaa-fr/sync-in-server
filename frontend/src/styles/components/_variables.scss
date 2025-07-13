@@ -1,0 +1,75 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+//PATHS
+//--------------------------------------------------------
+// NavBar
+$navbar-height: 40px;
+//Sidebar left
+$sidebar-apps-icons-width: 40px;
+$sidebar-apps-icons-height: 40px;
+$sidebar-apps-menus-width: 170px;
+$sidebar-apps-height: $sidebar-apps-icons-height;
+$sidebar-z-index: 1030;
+$content-z-index: 1000;
+// Sidebar right (control)
+//--------------------------------------------------------
+$control-sidebar-width: 310px;
+$control-sidebar-small-width: 250px;
+$control-sidebar-menu-width: 40px;
+$control-sidebar-menu-z-index: 1010;
+//=== Nav Styles
+$nav-link-hover-bg: lighten($gray-dark, 5%);
+$nav-disabled-link-color: $gray-light;
+$nav-disabled-link-hover-color: $gray-light;
+$nav-link-padding: 10px;
+//Transition global options
+$transition-speed: .3s;
+$transition-fn: ease-out;
+//SIDEBAR SKINS
+//--------------------------------------------------------
+//Dark sidebar
+$sidebar-dark-icons-menu-bg: $custom-dark-color;
+$sidebar-dark-icons-menu-hover-bg: darken($sidebar-dark-icons-menu-bg, 4%);
+$sidebar-dark-icons-menu-color: #a6bdd5;
+$sidebar-dark-icons-menu-hover-color: $primary;
+$sidebar-dark-icons-menu-border-color: #304047;
+$sidebar-dark-apps-menu-title-bg: $sidebar-dark-icons-menu-hover-bg;
+$sidebar-dark-apps-menu-title-color: lighten($sidebar-dark-icons-menu-hover-bg, 20%);
+$sidebar-dark-apps-menu-bg: lighten($sidebar-dark-icons-menu-bg, 2%);
+$sidebar-dark-apps-menu-hover-bg: $sidebar-dark-icons-menu-hover-bg;
+$sidebar-dark-apps-menu-color: lighten($sidebar-dark-icons-menu-bg, 60%);
+$sidebar-dark-apps-menu-hover-color: #fff;
+$sidebar-dark-apps-menu-border-color: lighten($sidebar-dark-apps-menu-bg, 40%);
+$sidebar-dark-mini-menu-bg: $sidebar-dark-icons-menu-hover-bg;
+$sidebar-dark-mini-menu-color: $sidebar-dark-apps-menu-border-color;
+$sidebar-dark-mini-menu-hover-color: $sidebar-dark-apps-menu-hover-color;
+//Light sidebar
+$sidebar-light-icons-menu-bg: $primary;
+//$sidebar-light-icons-menu-hover-bg: #2a445e;
+$sidebar-light-icons-menu-hover-bg: darken($sidebar-light-icons-menu-bg, 15%);
+$sidebar-light-icons-menu-color: $gray-lightest;
+$sidebar-light-icons-menu-hover-color: $white;
+$sidebar-light-icons-menu-border-color: lighten($sidebar-light-icons-menu-bg, 10%);
+$sidebar-light-apps-menu-title-bg: $primary;
+$sidebar-light-apps-menu-title-color: #a6bdd5;
+$sidebar-light-apps-menu-bg: $gray-lightest;
+$sidebar-light-apps-menu-hover-bg: $gray-light;
+$sidebar-light-apps-menu-color: $custom-dark-color;
+$sidebar-light-apps-menu-hover-color: $black;
+$sidebar-light-apps-menu-border-color: $gray-mid;
+$sidebar-light-mini-menu-bg: $secondary;
+$sidebar-light-mini-menu-color: $custom-dark-color;
+$sidebar-light-mini-menu-hover-color: $black;
+//BOXES
+//--------------------------------------------------------
+$box-border-color: #f4f4f4;
+$box-border-radius: 3px;
+$box-footer-bg: $gray-200;
+$box-boxshadow: 0 1px 1px rgba(0, 0, 0, .1);
+$box-padding: 8px;
+//Box variants
+$box-default-border-top-color: #d2d6de;

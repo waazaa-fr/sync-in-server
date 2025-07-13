@@ -1,0 +1,41 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="link-page">
+  <div class="header">
+    <a routerLink="">
+      <img alt="" height="40" [src]="logoUrl">
+    </a>
+  </div>
+  <div class="d-flex flex-column align-content-center">
+    <div (click)="followLink()" class="resource d-flex flex-column align-items-center mt-3 mx-auto cursor-pointer">
+      @if (mimeUrl) {
+        <img [src]="mimeUrl" alt="" height="96" class="no-select-pointer">
+      } @else {
+        <fa-icon [icon]="icons.SPACES" class="circle-primary-icon" [fixedWidth]="false" style="min-width: 128px; min-height: 128px; font-size: 64px"></fa-icon>
+      }
+      <span class="error-code">{{ link.share?.name || link.space?.name }}</span>
+    </div>
+  </div>
+  <div class="error-text no-select">
+    <span class="hr"></span>
+    <div class="d-flex justify-content-center align-items-center">
+      @if (link.owner) {
+        <img [src]="link.owner.avatar" alt="" class="avatar-base-img me-3" width="42" height="42">
+        <span class="oops me-2">{{ link.owner.fullName }}</span>
+      }
+      <span class="solve">
+      @if (link.space) {
+        <span l10nTranslate>You have been invited to join this space</span>
+      } @else if (link.owner) {
+        <span>{{ 'share with you this' | translate:locale.language }} {{ (link.share.isDir ? 'directory' : 'file') | translate:locale.language }}</span>
+      } @else {
+        <span l10nTranslate>You have been invited to join this share</span>
+      }
+      </span>
+    </div>
+  </div>
+</div>

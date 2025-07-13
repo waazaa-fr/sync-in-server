@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header">
+  <h4 class="modal-title" l10nTranslate>
+    <fa-icon [icon]="icons.faTrashCan" class="me-1"></fa-icon>
+    <span l10nTranslate>Trash</span>
+    @if (submitted) {
+      <fa-icon [icon]="icons.faSpinner" animation="spin" class="ms-2"></fa-icon>
+    }
+  </h4>
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white" type="button"></button>
+</div>
+<div class="modal-body">
+  <div>
+    @switch (submitted) {
+      @case (false) {
+        @if (files.length > 1) {
+          <div [innerHTML]="(permanently ? 'delete_multiple_files' : 'trash_multiple_files') | translate:locale.language:{arg: files.length}"></div>
+        } @else if (files.length === 1) {
+          <div [innerHTML]="(permanently ? 'delete_one_file' : 'trash_one_file') | translate:locale.language:{arg: files[0].name}"></div>
+        }
+      }
+      @case (true) {
+        <div l10nTranslate>{{ (permanently ? 'Permanent deletion' : 'Moving to trash') }}</div>
+      }
+    }
+  </div>
+</div>
+<div class="modal-footer">
+  <button (click)="layout.closeDialog()" class="btn btn-sm btn-secondary" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()" [disabled]="submitted" class="btn btn-sm btn-danger" type="button" l10nTranslate>Confirm</button>
+</div>

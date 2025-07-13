@@ -1,0 +1,138 @@
+/*
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+import { HttpException, HttpStatus, Injectable, Logger, StreamableFile } from '@nestjs/common'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { LoginResponseDto } from '../../../authentication/dto/login-response.dto'
+import { JwtIdentityPayload } from '../../../authentication/interfaces/jwt-payload.interface'
+import { AuthManager } from '../../../authentication/services/auth-manager.service'
+import { FilesManager } from '../../files/services/files-manager.service'
+import { SendFile } from '../../files/utils/send-file'
+import { SPACE_REPOSITORY } from '../../spaces/constants/spaces'
+import { SpaceEnv } from '../../spaces/models/space-env.model'
+import { SpacesManager } from '../../spaces/services/spaces-manager.service'
+import { UserPasswordDto } from '../../users/dto/user-password.dto'
+import { UserModel } from '../../users/models/user.model'
+import { UsersManager } from '../../users/services/users-manager.service'
+import { LINK_ERROR } from '../constants/links'
+import { LinkAsUser } from '../interfaces/link-guest.interface'
+import { SpaceLink } from '../interfaces/link-space.interface'
+import { LinksQueries } from './links-queries.service'
+
+@Injectable()
+export class LinksManager {
+  private logger = new Logger(LinksManager.name)
+
+  constructor(
+    private readonly authManager: AuthManager,
+    private readonly usersManager: UsersManager,
+    private readonly filesManager: FilesManager,
+    private readonly spacesManager: SpacesManager,
+    private readonly linksQueries: LinksQueries
+  ) {}
+
+  async linkValidation(identity: JwtIdentityPayload, uuid: string): Promise<{ ok: boolean; error: string | true; link: SpaceLink }> {
+    const [_link, check, ok] = await this.linkEnv(identity, uuid)
+    if (!ok) {
+      this.logger.warn(`${this.linkValidation.name} - ${uuid} : ${check}`)
+    }
+    const spaceLink: SpaceLink = ok ? await this.linksQueries.spaceLink(uuid) : null
+    if (spaceLink?.owner?.login) {
+      spaceLink.owner.avatar = await this.usersManager.getAvatarBase64(spaceLink.owner.login)
+      // for security reasons
+      delete spaceLink.owner.login
+    }
+    return { ok: ok, error: ok ? null : check, link: spaceLink }
+  }
+
+  async linkAccess(identity: JwtIdentityPayload, uuid: string, req: FastifyRequest, res: FastifyReply): Promise<StreamableFile | LoginResponseDto> {
+    const [link, check, ok] = await this.linkEnv(identity, uuid)
+    if (!ok) {
+      this.logger.warn(`${this.linkAccess.name} - *${link.user.login}* (${link.user.id}) : ${check}`)
+      throw new HttpException(check as string, HttpStatus.BAD_REQUEST)
+    }
+    const user = new UserModel(link.user)
+    const spaceLink: SpaceLink = await this.linksQueries.spaceLink(uuid)
+    if (!spaceLink.space && !spaceLink.share.isDir) {
+      // download the file (authentication has been verified before)
+      this.logger.log(`${this.linkAccess.name} - *${user.login}* (${user.id}) downloading ${spaceLink.share.name}`)
+      this.incrementLinkAccess(link)
+      const spaceEnv: SpaceEnv = await this.spaceEnvFromLink(user, spaceLink)
+      const sendFile: SendFile = this.filesManager.sendFileFromSpace(spaceEnv, true, spaceLink.share.name)
+      try {
+        await sendFile.checks()
+        return sendFile.stream(req, res)
+      } catch (e) {
+        this.logger.error(`${this.linkAccess.name} - unable to send file : ${e}`)
+        throw new HttpException('Unable to download file', HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+    } else if (link.user.id !== identity.id) {
+      // authenticate user to allow access to the directory
+      this.logger.log(`${this.linkAccess.name} - *${user.login}* (${user.id}) is logged`)
+      this.incrementLinkAccess(link)
+      this.usersManager.updateAccesses(user, req.ip, true).catch((e: Error) => this.logger.error(`${this.linkAccess.name} - ${e}`))
+      return this.authManager.setCookies(user, res)
+    }
+    // already authenticated
+  }
+
+  async linkAuthentication(identity: JwtIdentityPayload, uuid: string, linkPasswordDto: UserPasswordDto, req: FastifyRequest, res: FastifyReply) {
+    const [link, check, ok] = await this.linkEnv(identity, uuid, true)
+    if (!ok) {
+      this.logger.warn(`${this.linkAuthentication.name} - *${link.user.login}* (${link.user.id}) : ${check}`)
+      throw new HttpException(check as string, HttpStatus.BAD_REQUEST)
+    }
+    const authSuccess: boolean = await this.usersManager.compareUserPassword(link.user.id, linkPasswordDto.password)
+    const user = new UserModel(link.user)
+    this.usersManager.updateAccesses(user, req.ip, authSuccess).catch((e: Error) => this.logger.error(`${this.linkAuthentication.name} - ${e}`))
+    if (!authSuccess) {
+      this.logger.warn(`${this.linkAuthentication.name} - *${user.login}* (${user.id}) : auth failed`)
+      throw new HttpException(LINK_ERROR.UNAUTHORIZED, HttpStatus.FORBIDDEN)
+    }
+    // authenticate user to allow access
+    this.logger.log(`${this.linkAuthentication.name} - *${user.login}* (${user.id}) is logged`)
+    return this.authManager.setCookies(user, res)
+  }
+
+  private spaceEnvFromLink(user: UserModel, link: SpaceLink): Promise<SpaceEnv> {
+    return this.spacesManager.spaceEnv(user, [
+      link.space ? SPACE_REPOSITORY.FILES : SPACE_REPOSITORY.SHARES,
+      link.space ? link.space.alias : link.share.alias
+    ])
+  }
+
+  private async linkEnv(identity: JwtIdentityPayload, uuid: string, ignoreAuth: boolean = false): Promise<[LinkAsUser, string | true, boolean]> {
+    const link: LinkAsUser = await this.linksQueries.linkFromUUID(uuid)
+    const check: string | true = this.checkLink(identity, link, ignoreAuth)
+    const ok: boolean = check === true
+    return [link, check, ok]
+  }
+
+  private checkLink(identity: JwtIdentityPayload, link: LinkAsUser, ignoreAuth: boolean = false): string | true {
+    if (!link) {
+      return LINK_ERROR.NOT_FOUND
+    }
+    if (!link.user.isActive) {
+      return LINK_ERROR.DISABLED
+    }
+    if (link.limitAccess !== 0 && link.nbAccess >= link.limitAccess) {
+      return LINK_ERROR.EXCEEDED
+    }
+    if (link.expiresAt && new Date() >= link.expiresAt) {
+      return LINK_ERROR.EXPIRED
+    }
+    if (!ignoreAuth && link.requireAuth && link.user.id !== identity.id) {
+      return LINK_ERROR.UNAUTHORIZED
+    }
+    return true
+  }
+
+  private incrementLinkAccess(link: LinkAsUser) {
+    if (link.limitAccess !== null) {
+      this.linksQueries.incrementLinkAccess(link.uuid).catch((e: Error) => this.logger.error(`${this.incrementLinkAccess.name} - ${e}`))
+    }
+  }
+}

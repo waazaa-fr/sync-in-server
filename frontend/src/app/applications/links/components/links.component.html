@@ -1,0 +1,229 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<!--Start Top Menu-->
+<div class="app-top-menu">
+  <button (click)="loadShareLinks()"
+          class="d-none d-sm-block btn btn-sm btn-secondary me-1"
+          [tooltip]="'Refresh' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faArrowRotateRight" [animation]="loading ? 'spin' : null"></fa-icon>
+  </button>
+  <button (click)="openLinkDialog()"
+          [disabled]="!selected" class="btn btn-sm btn-secondary me-1"
+          [tooltip]="'Edit link' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faPen"></fa-icon>
+  </button>
+  <button (click)="copyToClipboard()"
+          [disabled]="!selected"
+          class="btn btn-sm me-1 {{linkWasCopied ? 'btn-info' : 'btn-secondary'}}"
+          [tooltip]="'Copy link' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="linkWasCopied? icons.faClipboardCheck : icons.faClipboard"></fa-icon>
+  </button>
+  <button (click)="goTo()"
+          [disabled]="!selected"
+          class="btn btn-sm btn-secondary"
+          [tooltip]="'Go to' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faMapMarkerAlt"></fa-icon>
+  </button>
+  <div class="ms-auto">
+    <!--Start Filter Button-->
+    <div class="btn-group btn-group-sm me-1">
+      <app-input-filter class="d-none d-sm-block"></app-input-filter>
+    </div>
+    <!--End Filter Button-->
+    <!--Start View Button-->
+    <app-navigation-view [sortParams]="sortTable.sortParam"
+                         [sortFields]="btnSortFields"
+                         (sortBy)="sortBy($event)"
+                         (switchView)="galleryMode = $event">
+    </app-navigation-view>
+    <!--End View Button-->
+  </div>
+</div>
+<!--End Top Menu-->
+@if (galleryMode?.enabled) {
+  <!--Start Gallery Content-->
+  <div class="app-thumbs">
+    <app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                        [childHeight]="galleryMode.dimensions"
+                        [childWidth]="galleryMode.dimensions"
+                        [items]="shares | searchFilter:inputFilter.search()"
+                        [galleryMode]="true"
+                        [resizeOffset]="110">
+      <div class="row g-0" tabindex="-1">
+        @for (s of scrollView?.viewPortItems; track s.id) {
+          <div (click)="onSelect(s)"
+               (contextmenu)="onTargetContextMenu($event, s)"
+               (pressup)="onTargetContextMenu($event, s)"
+               (tap)="openLinkDialog()"
+               [class.selected]="s.id === selected?.id"
+               [class.disabled]="!s.link.isActive"
+               [style.height.px]="galleryMode.dimensions"
+               [style.width.px]="galleryMode.dimensions"
+               class="card">
+            <div [attr.rowIndex]="$index" class="card-body">
+              <img [src]="s.mimeUrl" [height]="galleryMode.image" [width]="galleryMode.image" alt="" draggable="true" (error)="s.fallBackMimeUrl()">
+              <span class="label-top-right">
+                @if (s.newly) {
+                  <span [style.font-size.px]="galleryMode.textSize" class="badge rounded-pill bg-warning">
+                    {{ s.hTimeAccessAgo }}
+                  </span>
+                }
+              </span>
+              <span class="label-bottom-left">
+                <app-share-repository [share]="s" [galleryMode]="galleryMode"></app-share-repository>
+              </span>
+            </div>
+            <div class="card-footer text-center text-truncate p-1">
+              <span [style.font-size.px]="galleryMode.textSize" class="no-pointer-events" draggable="false">{{ s.name }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </app-virtual-scroll>
+  </div>
+  <!--End Gallery Content-->
+} @else {
+  <!--Start Table Files Content-->
+  <table class="app-table">
+    <thead>
+    <tr>
+      @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+        @if (th.value.show) {
+          <th (click)="sortBy(th.key)"
+              [style.width.%]="th.value.width"
+              [class.text-align-center]="th.value.textCenter"
+              [class.cursor-pointer]="th.value.sortable"
+              class="{{th.value.class}}"
+              l10nTranslate>
+            {{ th.value.label }}
+            @if (sortTable.sortParam.column === th.key) {
+              <fa-icon [icon]="sortTable.sortParam.asc ? icons.faArrowDown : icons.faArrowUp" [fixedWidth]="false"></fa-icon>
+            }
+          </th>
+        }
+      }
+    </tr>
+    </thead>
+  </table>
+  <app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                      [bufferAmount]="5"
+                      [items]="shares | searchFilter:inputFilter.search()">
+    <table class="app-table">
+      <tbody tabindex="-1">
+        @for (s of scrollView?.viewPortItems; track s.id) {
+          <tr (click)="onSelect(s)"
+              (contextmenu)="onTargetContextMenu($event, s)"
+              (pressup)="onTargetContextMenu($event, s)"
+              (tap)="openLinkDialog()"
+              [class.selected]="s.id === selected?.id"
+              [class.disabled]="!s.link.isActive">
+            @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+              @if (th.value.show) {
+                <td [style.width.%]="th.value.width"
+                    [class.text-align-center]="th.value.textCenter"
+                    class="{{th.value.class}} {{th.value.newly !== undefined ? 'props-newly-' + s[th.value.newly] : ''}}">
+                  @switch (th.key) {
+                    @case ('name') {
+                      <div class="d-flex align-items-center">
+                        <img [src]="s.mimeUrl" alt="" draggable="false" height="30" width="30" (error)="s.fallBackMimeUrl()">
+                        <div class="d-flex flex-column text-truncate">
+                          <span class="no-pointer-events" draggable="false">{{ s.name }}</span>
+                          <span class="no-pointer-events text-muted fs-xxxs" draggable="false">{{ s.description }}</span>
+                        </div>
+                      </div>
+                    }
+                    @case ('link') {
+                      <span class="d-flex flex-column">
+                        <span>{{ s.link.name }}</span>
+                        @if (s.link.email) {
+                          <span>{{ s.link.email || '' }}</span>
+                        }
+                      </span>
+                    }
+                    @case ('from') {
+                      <app-share-repository [share]="s"></app-share-repository>
+                    }
+                    @case ('infos') {
+                      @if (s.link.limitAccess) {
+                        <span class="badge rounded-pill {{s.link.nbAccess >= s.link.limitAccess ? 'bg-danger': 'bg-success'}}">
+                          {{ s.link.nbAccess }}/{{ s.link.limitAccess }}
+                        </span>
+                      } @else {
+                        <span class="badge rounded-pill bg-success">{{ s.link.nbAccess }}</span>
+                      }
+                      @if (s.link.expiresAt) {
+                        <span class="badge rounded-pill bg-{{s.hTimeExpirationAgo >= 1 ? 'warning': 'danger'}} ms-1">
+                          <fa-icon [icon]="icons.faClock" [fixedWidth]="false"></fa-icon>
+                          @if (s.hTimeExpirationAgo >= 1) {
+                            <span class="ms-2">{{ s.hTimeExpirationAgo }}&nbsp;{{ (s.hTimeExpirationAgo === 1 ? 'day' : 'days') | translate:locale.language }}</span>
+                          }
+                        </span>
+                      }
+                      @if (s.link.requireAuth) {
+                        <span class="badge rounded-pill bg-gray-dark ms-1">
+                          <fa-icon [icon]="icons.faLock"></fa-icon>
+                        </span>
+                      }
+                    }
+                    @case ('permissions') {
+                      @if (s.link.permissions) {
+                        <app-file-permissions [permissions]="s.hPerms" tooltipPlacement="auto"></app-file-permissions>
+                      }
+                    }
+                    @case ('accessed') {
+                      @if (s.link.currentAccess) {
+                        {{ s.hTimeAccessAgo }}
+                      } @else {
+                        <span l10nTranslate>never</span>
+                      }
+                    }
+                  }
+                </td>
+              }
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-virtual-scroll>
+  <!--End Table Files Content-->
+}
+<!--Start Foot Content-->
+<div class="app-foot-menu">
+  <span class="mx-auto">{{ shares.length }} {{ 'shares' | translate:locale.language }}</span>
+</div>
+<!--End Foot Content-->
+<!--Start Context Menu -->
+<context-menu #MainContextMenu>
+  <ng-template (execute)="loadShareLinks()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faArrowRotateRight"></fa-icon>Refresh</span>
+  </ng-template>
+</context-menu>
+<context-menu #TargetContextMenu>
+  <ng-template (execute)="goTo()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faMapMarkerAlt"></fa-icon>Go to</span>
+  </ng-template>
+  <ng-template (execute)="openLinkDialog()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faPen"></fa-icon>Edit link</span>
+  </ng-template>
+  <ng-template (execute)="copyToClipboard()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faClipboard"></fa-icon>Copy link</span>
+  </ng-template>
+  <ng-template [divider]="true" contextMenuItem></ng-template>
+  <ng-template (execute)="layout.showRSideBarTab(TAB_MENU.SELECTION)" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faCircleInfo"></fa-icon>Informations</span>
+  </ng-template>
+</context-menu>
+<!--End Context Menu-->

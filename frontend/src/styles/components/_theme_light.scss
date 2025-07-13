@@ -1,0 +1,532 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+//Light Sidebar Mixins
+@mixin skin-light-left-sidebar() {
+  // Sidebar background color (Both .wrapper is responsible for sidebar bg color)
+  .wrapper, .left-sidebar {
+    background-color: $sidebar-light-apps-menu-bg;
+  }
+
+  .left-sidebar {
+    // Side bar Menu apps
+    .sidebar-apps-icons {
+      background-color: $sidebar-light-icons-menu-bg;
+
+      .menu > a {
+        color: $sidebar-light-icons-menu-color;
+
+        &:not(:first-child) {
+          border-bottom: .5px solid $sidebar-light-icons-menu-bg;
+
+          &:hover, &.active {
+            color: $sidebar-light-icons-menu-hover-color;
+            background: $sidebar-light-icons-menu-hover-bg;
+          }
+        }
+      }
+
+      .menu-mini {
+        background-color: $sidebar-light-mini-menu-bg;
+
+        > a {
+          color: $sidebar-light-mini-menu-color;
+
+          &:not(:last-child) {
+            border-bottom: .5px solid $sidebar-light-mini-menu-bg !important;
+          }
+
+          &:hover, &.active {
+            background: darken($sidebar-light-mini-menu-bg, 10%) !important;
+            color: $sidebar-light-mini-menu-hover-color;
+
+            > fa-icon:first-child {
+              color: $primary;
+            }
+          }
+        }
+
+        .chat-item-sidebar {
+          background-color: $sidebar-light-mini-menu-bg;
+          color: $sidebar-light-mini-menu-color;
+
+          &:not(:last-child) {
+            border-bottom: .5px solid $sidebar-light-mini-menu-bg !important;
+          }
+
+          &:hover, &.active {
+            border-left-color: transparent !important;
+            background: darken($sidebar-light-mini-menu-bg, 5%) !important;
+            color: $sidebar-light-mini-menu-hover-color;
+          }
+        }
+      }
+    }
+
+    .sidebar-apps-menus {
+      .menu {
+        border-bottom: .5px solid $sidebar-light-apps-menu-bg;
+
+        > a {
+          color: $sidebar-light-apps-menu-color;
+        }
+
+        //&.submenu {
+        //  background-color: darken($sidebar-light-apps-menu-bg, 3%);
+        //}
+
+        &:hover, &.active {
+          background: $sidebar-light-apps-menu-hover-bg;
+
+          > a {
+            color: $sidebar-light-apps-menu-hover-color;
+
+            > fa-icon:first-child {
+              color: $primary;
+            }
+          }
+        }
+      }
+
+      .sidebar-apps-footer {
+        color: $sidebar-light-apps-menu-color;
+      }
+    }
+  }
+}
+
+@mixin skin-light-right-sidebar() {
+  .control-sidebar-theme-light {
+    background: $gray-lightest;
+    border-left: .5px solid $sidebar-light-apps-menu-border-color;
+
+    .sidebar-component-title {
+      background-color: $secondary-light;
+      color: $black;
+      border-bottom: .5px solid $secondary;
+    }
+
+    .sidebar-title {
+      background-color: $secondary-light;
+      color: $black;
+      border-bottom: .5px solid $secondary;
+    }
+
+    hr {
+      border-top: .5px solid $sidebar-light-apps-menu-border-color;
+      opacity: 1;
+    }
+  }
+
+  .control-sidebar-menu {
+    .sidebar-apps-icons {
+      background-color: $sidebar-light-icons-menu-color;
+      border-left: .5px solid $sidebar-light-apps-menu-border-color;
+
+      .menu {
+        > a {
+          color: $sidebar-light-apps-menu-color;
+
+          &:not(:first-child) {
+            border-top: .5px solid $gray-lightest;
+          }
+
+          &:hover, &.active {
+            color: $black;
+            background: $secondary;
+          }
+        }
+      }
+    }
+  }
+}
+
+@mixin skin-light-chat() {
+  .chat-border-bottom {
+    border-bottom-color: $sidebar-light-apps-menu-border-color;
+  }
+
+  .chat-input {
+    background-color: $sidebar-light-apps-menu-hover-bg;
+  }
+
+  .chat-container {
+    background-color: $gray-lighter;
+  }
+
+  .chat-button-bottom {
+    color: darken(gray, 30%);
+
+    &:hover {
+      color: black;
+    }
+  }
+
+  .chat-list-sidebar {
+    color: $sidebar-light-apps-menu-color;
+
+    .chat-item-sidebar {
+      border-bottom: .5px solid $sidebar-light-apps-menu-bg;
+
+      &:hover, &.active {
+        color: $sidebar-light-apps-menu-hover-color;
+        background-color: $sidebar-light-apps-menu-hover-bg;
+      }
+    }
+  }
+}
+
+@mixin skin-light-tree() {
+  .angular-tree-component {
+    .node-wrapper {
+      &:hover,
+      &:focus,
+      &:active {
+        background-color: $table-bg-hover;
+      }
+
+      &.tree-selected {
+        background-color: $selected-background;
+      }
+    }
+
+    .node-content-wrapper {
+      &:hover,
+      &:focus,
+      &:active {
+        background-color: $table-bg-hover;
+      }
+
+      &.node-content-wrapper-active {
+        background-color: $selected-background;
+
+        &:hover {
+          background-color: $selected-background;
+        }
+      }
+    }
+  }
+}
+
+@mixin skin-light-app() {
+  .app-table {
+    color: $body-color;
+    // Bootstrap 5 fix
+    > :not(:first-child) {
+      border-top: 1px solid $gray-light;
+    }
+
+    thead {
+      background-color: $gray-lightest;
+
+      tr {
+        th {
+          border-right-color: $gray-light;
+          border-bottom-color: $gray-light;
+        }
+      }
+    }
+
+    tbody tr {
+      border-bottom-color: $gray-lighter !important;
+
+      &:hover {
+        background-color: $table-bg-hover !important;
+      }
+
+      &.selected {
+        background-color: $selected-background !important;
+      }
+    }
+
+    tbody td:not(:first-child) {
+      color: lighten($gray-dark, 5%);
+    }
+  }
+
+  .app-table-striped {
+    > tbody > tr {
+      &:nth-of-type(odd) {
+        background-color: $gray-lightest;
+      }
+
+      &:hover {
+        background-color: $table-bg-hover;
+      }
+    }
+  }
+
+  .app-top-menu {
+    border-top-color: $gray-light;
+    border-bottom-color: $gray-light;
+    background-color: $gray-lightest;
+
+    .dropdown-menu {
+      background-color: $gray-light;
+      border-color: darken($gray-light, 10%);
+
+      .dropdown-item {
+        color: $black !important;
+
+        &:hover, &.active {
+          background-color: darken($gray-mid, 5%) !important;
+        }
+      }
+    }
+  }
+
+  .app-foot-menu {
+    background-color: $gray-light;
+    color: $dropdown-link-color;
+  }
+
+  .app-thumbs {
+    background-color: $gray-lighter;
+
+    .row {
+      .card {
+        background-color: $white;
+        border-color: $gray-mid;
+
+        &.selected {
+          background-color: $table-bg-hover;
+
+          .card-footer {
+            background-color: $table-bg-hover;
+          }
+        }
+      }
+
+      .card-footer {
+        background-color: $gray-lightest;
+        border-top: .5px solid $gray-mid;
+      }
+    }
+  }
+
+  .app-sync-clients {
+    .left-panel {
+      border-right-color: $gray-light !important;
+      border-bottom-color: $gray-light !important;
+    }
+
+    .right-panel {
+      border-bottom-color: $gray-light !important;
+    }
+  }
+
+  .app-div-hovered {
+    &:hover {
+      background-color: $table-bg-hover !important;
+    }
+
+    &.selected {
+      background-color: darken($table-bg-hover, 4%) !important;
+    }
+  }
+
+  .app-div-striped {
+    &:nth-of-type(even) {
+      background-color: lighten($gray-lighter, 2%);
+    }
+
+    &.selected {
+      background-color: darken($table-bg-hover, 4%) !important;
+    }
+  }
+
+  .app-div-striped-inverse {
+    &:nth-of-type(odd) {
+      background-color: darken($body-bg, 4%);
+    }
+  }
+
+  .profile-page {
+    .box {
+      background-color: $gray-lighter;
+    }
+
+    .list-group-item {
+      background-color: lighten($gray-light, 10%);
+      color: $custom-color;
+    }
+  }
+
+  .user-groups-page {
+    .app-table > tbody {
+      background-color: $white;
+    }
+  }
+
+  .user-details {
+    color: $black;
+
+    select {
+      background-color: $white !important;
+      color: black;
+      filter: none;
+    }
+  }
+
+  .task-list {
+    border-bottom-color: $gray-mid;
+
+    &:hover {
+      background-color: $table-bg-hover;
+    }
+  }
+
+  .app-small-card {
+    background-color: $gray-light;
+  }
+
+  .wizard {
+    background-color: lighten($primary, 50%);
+
+    tbody tr {
+      &:hover {
+        background-color: $table-bg-hover;
+      }
+
+      &.selected {
+        background-color: $selected-background;
+      }
+    }
+
+    .wizard-nav-content {
+      background-color: $gray-lightest;
+    }
+  }
+
+  .sidebar-item {
+    .sidebar-item-container {
+      &:hover {
+        background-color: $table-bg-hover;
+      }
+
+      .sidebar-item-content {
+        border-bottom-color: $gray-mid;
+      }
+    }
+  }
+}
+
+@mixin skin-light-miscellaneous() {
+  .content-wrapper {
+    background-color: white;
+    color: $body-color;
+  }
+
+  .content-container {
+    border-left: .5px solid $sidebar-light-apps-menu-border-color;
+  }
+
+  .ngx-contextmenu {
+    background-color: $gray-light !important;
+    border-color: darken($gray-light, 10%) !important;
+
+    .ngx-context-menu-item {
+      color: $black !important;
+
+      &:hover, &.active {
+        background-color: darken($gray-mid, 5%) !important;
+      }
+    }
+  }
+
+  .dropdown-divider {
+    border-top-color: darken($secondary-light, 15%) !important;
+  }
+
+  .modal-body {
+    background-color: $body-bg;
+
+    .app-top-menu {
+      background: transparent;
+    }
+  }
+
+  .modal-footer {
+    background-color: $gray-lightest;
+  }
+
+  typeahead-container, .ui-select-choices {
+    &.dropdown-menu {
+      background-color: $white !important;
+    }
+  }
+
+  .small-box {
+    //background: $gray-lightest;
+    border-color: $gray-lighter;
+  }
+
+  .nav-link {
+    color: $body-color;
+    background-color: lighten($gray-mid, 4%);
+
+    &:hover {
+      background: darken($gray-mid, 2%);
+    }
+
+    &.active {
+      color: $white;
+      background: $primary;
+    }
+
+    &:not(.active).disabled {
+      color: $muted;
+    }
+  }
+
+  .box-default {
+    @include box-solid-variant($gray-lighter, $body-color, true);
+
+    > .box-header {
+      border-bottom: .5px solid darken($gray-lighter, 5%);
+    }
+
+    > .box-footer {
+      border-top: .5px solid darken($gray-lighter, 5%);
+    }
+  }
+
+  .box-footer-default {
+    background-color: $gray-lighter;
+
+    &:hover {
+      background-color: darken($gray-lighter, 5%);
+    }
+  }
+
+  .box-transparent {
+    > .box-header {
+      border-bottom-color: $gray-lighter;
+    }
+  }
+
+  .products-list > li:hover {
+    background-color: $table-bg-hover;
+  }
+
+  .product-list-in-box {
+    border-bottom-color: $gray-lighter;
+  }
+
+  .bg-theme {
+    background-color: $gray-light;
+  }
+
+  .bg-theme-alt {
+    background-color: $gray-lightest !important;
+  }
+
+  .avatar-img {
+    background-color: darken($gray-light, 5%);
+  }
+}
+
+

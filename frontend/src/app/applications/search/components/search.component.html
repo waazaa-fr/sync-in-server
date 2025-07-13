@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="app-top-menu">
+  <div class="input-group" style="width: 45%;">
+    <button (click)="doSearch()" [disabled]="searchContent().length < minCharsToSearch" class="btn btn-sm btn-secondary" role="button" type="button">
+      <fa-icon [icon]="loading ? icons.faSpinner : icons.SEARCH_ICON" [animation]="loading ? 'spin' : null"></fa-icon>
+    </button>
+    <input [value]="searchContent()"
+           (input)="setCurrentSearch($event)"
+           [placeholder]="(this.store.currentSearch().fullText ? 'Search for content' : 'Search for files')|translate:locale.language"
+           (keyup.enter)="doSearch()"
+           (keyup.escape)="clearSearch()"
+           class="flex-fill form-control form-control-sm"
+           name="search"
+           type="text"
+           style="padding-right: 24px"
+           appAutofocus
+           autocomplete>
+    @if (searchContent()) {
+      <span class="cursor-pointer" style="position: absolute; right: 40px; top: 3px; z-index: 1001; font-size: 1rem">
+        <fa-icon (click)="clearSearch()" [icon]="icons.faTimes" role="button"></fa-icon>
+      </span>
+    }
+    <button [ngModel]="this.store.currentSearch().fullText"
+            (ngModelChange)="toggleFullText()"
+            [tooltip]="'Search for content'|translate:locale.language"
+            placement="bottom"
+            class="btn btn-sm btn-outline-secondary-alt fs-xxs"
+            role="button"
+            type="button"
+            btnCheckbox >
+      <fa-icon [icon]="icons.faFont"></fa-icon>
+    </button>
+  </div>
+  <!--Start Filter Button-->
+  <app-input-filter class="d-none d-sm-block ms-auto"></app-input-filter>
+  <!--End Filter Button-->
+</div>
+<div appAutoResize class="fs-xs">
+  @if (errorMessage) {
+    <div class="p-3 text-danger fw-500">{{ errorMessage }}</div>
+  }
+  @for (f of this.store.filesSearch() | searchFilter:inputFilter.search(); track f.id) {
+    <div class="app-div-striped py-2" (click)="selectedId = f.id" (tap)="goTo(f)" [class.selected]="f.id === selectedId">
+      <div class="d-flex align-items-center text-truncate px-2 py-1">
+        <img [src]="f.mimeUrl" (error)="f.fallBackMimeUrl()" alt="" draggable="false" height="28">
+        <div class="d-flex flex-column text-truncate ms-2" style="height: 34px">
+          <span class="fs-xxs text-truncate">{{ f.name }}</span>
+          <div class="d-flex align-items-center text-{{f.iconClass}}">
+            <fa-icon [icon]="f.icon" class="me-1"></fa-icon>
+            <span class="fs-xxxs text-truncate">
+              <span>{{ f.showedPath }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      @if (f.matches?.length) {
+        <hr class="m-0">
+        <div class="d-flex flex-column px-2 py-1">
+          @for (match of f.matches; track $index) {
+            <div>
+              <span>...</span>
+              <span class="fs-xxxs" [innerHTML]="match"></span>
+              <span>...</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

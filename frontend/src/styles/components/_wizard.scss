@@ -1,0 +1,67 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  font-size: $font-size-md;
+  height: 100%;
+  padding: 10px;
+
+  th {
+    background-color: #545b62;
+    border: 1px solid #545b62 !important;
+    color: white;
+  }
+
+  thead {
+    font-size: 0.8rem !important;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #9faecb !important;
+  }
+
+  .wizard-nav-header {
+    border-style: hidden;
+
+    th {
+      border-radius: $border-radius-base $border-radius-base 0 0;
+      padding: 0.5rem !important;
+    }
+  }
+
+  .wizard-nav-content {
+    border-radius: 0 0 $border-radius-base $border-radius-base;
+  }
+
+  .app-top-menu {
+    border: none !important;
+    background: transparent;
+  }
+
+  .area {
+    padding: 15px;
+    height: 100%;
+
+    .dropzone {
+      display: flex;
+      justify-content: center;
+      border: 2px dashed #bbb;
+      border-radius: $border-radius-base;
+      padding: 80px;
+      font-size: 21px;
+      font-weight: bold;
+      color: #bbb;
+      height: 100%;
+
+      &.active {
+        border: 2px dashed $dark-blue;;
+        color: $dark-blue;
+      }
+    }
+  }
+}

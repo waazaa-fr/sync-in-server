@@ -1,0 +1,24 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="sidebar-component-title">
+  <span l10nTranslate>Online users</span>
+</div>
+<div appAutoResize>
+  @for (user of onlineUsers(); track user.id) {
+    <div class="app-onlines-content">
+      <div class="d-flex align-items-center align-self-center avatar">
+        <img [src]="user.avatarUrl" class="avatar-img" alt="">
+        <span class="avatar-{{allOnlineStatus[user?.onlineStatus]}}"></span>
+        <div class="d-flex flex-column ms-2">
+          <span class="no-pointer-events fs-xs" draggable="false">{{ user.fullName }}</span>
+          <span class="no-pointer-events text-muted fs-xxxs" draggable="false">{{ user.email }}</span>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

@@ -1,0 +1,35 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="app-auth">
+  <div class="background">
+    <div class="content">
+      <div class="header">
+        <img alt="" height="65" width="240" [ngSrc]="logoUrl" [priority]="true">
+      </div>
+      <div class="body">
+        <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
+          <p class="fs-sm mb-0 {{hasError ? 'text-danger' : 'text-white-50'}}" l10nTranslate>{{ hasError || 'Sign-in to your account' }}</p>
+          <div class="input-group my-2">
+              <span class="input-group-text">
+                <fa-icon [icon]="icons.faUserAlt"></fa-icon>
+              </span>
+            <input appAutofocus class="form-control" formControlName="username" [placeholder]="'Login or Email' | translate:locale.language" type="text" />
+          </div>
+          <div class="input-group mb-4">
+              <span class="input-group-text">
+                <fa-icon [icon]="icons.faLock"></fa-icon>
+              </span>
+            <input class="form-control" formControlName="password" [placeholder]="'Password' | translate:locale.language" type="password" />
+          </div>
+          <div class="d-flex">
+            <button [disabled]="loginForm.invalid || submitted" class="btn btn-primary px-4 w-100" type="submit" l10nTranslate>Sign in</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

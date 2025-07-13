@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<ng-template #searchMembers let-member="item">
+  <div class="d-flex" role="button">
+    <div class="d-flex align-items-center text-truncate">
+      @if (member.isUser) {
+        <img alt="" class="avatar-base-img" height="30" width="30" [src]="member.avatarUrl" />
+      } @else {
+        <fa-icon [icon]="icons.GROUPS"
+                 class="{{member.isPersonalGroup ? 'circle-purple-icon' : 'circle-primary-icon'}}">
+        </fa-icon>
+      }
+    </div>
+    <div class="d-flex ms-2 pe-5 {{member.description ? 'flex-column align-items-start' : 'align-items-center'}}">
+      <div [innerHTML]="member.name | highlight: selection"></div>
+      @if (member.description) {
+        <span class="fs-xxxs me-4" [innerHTML]="member.description | highlight: selection"></span>
+      }
+    </div>
+    <div class="ms-auto ps-5 me-1 text-muted d-none d-lg-block fs-xxxs align-self-center">
+      <span l10nTranslate>{{ member.type }}</span>
+    </div>
+  </div>
+</ng-template>
+@if (!hideInput) {
+  <input
+    #InputTypeHead
+    (typeaheadOnSelect)="onSelect($event)"
+    (typeaheadLoading)="onLoading()"
+    (typeaheadNoResults)="onNoResults()"
+    (typeaheadOnPreview)="onPreview()"
+    [(ngModel)]="selection"
+    [placeholder]="placeHolder | translate: locale.language"
+    [typeaheadItemTemplate]="searchMembers"
+    [typeaheadAsync]="true"
+    [typeaheadMinLength]="0"
+    [typeaheadSingleWords]="true"
+    [typeaheadOptionField]="'name'"
+    [typeaheadWaitMs]="100"
+    [typeaheadHideResultsOnBlur]="true"
+    [typeahead]="asyncSearchUsersOrGroups"
+    class="form-control form-control-sm mb-2"
+  />
+}
+<div class="col-12 mt-1">
+  @for (member of members; track member.mid) {
+    <div class="bg-theme mb-1 p-2" style="border-radius: 4px">
+      <div class="d-flex align-items-center text-truncate no-select fs-xs" style="height: 32px">
+        <div class="d-flex align-items-center text-truncate me-auto">
+          @if (member.isUser) {
+            <img alt="" class="avatar-base-img" height="30" width="30" [src]="member.avatarUrl" />
+          } @else if (member.isLink) {
+            <fa-icon [icon]="icons.LINKS" class="circle-primary-icon"></fa-icon>
+          } @else {
+            <fa-icon [icon]="icons.GROUPS"
+                     class="{{member.isPersonalGroup ? 'circle-purple-icon' : 'circle-primary-icon'}}">
+            </fa-icon>
+          }
+          <div class="d-flex flex-column text-truncate ms-2">
+            <div class="text-truncate">{{ member.name }}</div>
+            <div class="fs-xxxs text-truncate">
+              @if (member.description) {
+                <span class="fs-xxxs">{{ member.description }}</span>
+              } @else if (!member.linkId) {
+                <span class="fs-xxxs" l10nTranslate>{{ member.type }}</span>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-column fs-xxxs text-muted d-none d-lg-block ms-3">
+          <div class="d-flex justify-content-end" l10nTranslate>{{ member.isLink ? MEMBER_TYPE.LINK : member.type }}</div>
+          <div class="d-flex justify-content-end">{{ member.createdAt | amTimeAgo }}</div>
+        </div>
+        @if (editMode) {
+          <div class="d-flex no-select">
+            <div class="vr mx-2"></div>
+            @if (withPermissions) {
+              @for (p of member.hPerms| keyvalue: originalOrderKeyValue; track p.key) {
+                @if (!filterPermissions || (filterPermissions && allowedPermissions.indexOf($any(p.key))) > -1) {
+                  <button [(ngModel)]="member.hPerms[p.key]"
+                          (ngModelChange)="onPermissionChange(member)"
+                          btnCheckbox
+                          [tooltip]="SPACES_PERMISSIONS_TEXT[p.key].text | translate:locale.language"
+                          class="btn btn-sm btn-custom"
+                          type="button">
+                    <fa-icon [icon]="SPACES_PERMISSIONS_TEXT[p.key].icon" size="lg"></fa-icon>
+                  </button>
+                }
+              }
+              <div class="vr ms-1 me-2"></div>
+            }
+            @if (editFunction) {
+              <button (click)="editFunction(member)"
+                      [tooltip]="'Edit' | translate:locale.language"
+                      class="btn btn-sm btn-custom me-2"
+                      type="button">
+                <fa-icon [icon]="icons.faPen"></fa-icon>
+              </button>
+            }
+            <button (click)="removeMember(member)"
+                    [tooltip]="'Remove' | translate:locale.language"
+                    class="btn btn-sm btn-danger"
+                    type="button">
+              <fa-icon [icon]="icons.faTimes"></fa-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

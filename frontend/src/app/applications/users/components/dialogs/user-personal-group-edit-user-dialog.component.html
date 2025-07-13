@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header align-items-center">
+  <h4 class="modal-title">
+    <fa-icon [icon]="icons.faUserPen" class="me-2"></fa-icon>
+    <span>{{ user.name }}</span>
+  </h4>
+  <h4 class="modal-title ms-auto">
+    <span l10nTranslate>Edit user</span>
+  </h4>
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white ms-2" type="button"></button>
+</div>
+<div class="modal-body">
+  <div class="d-flex align-items-center">
+    <div class="form-check form-switch form-check-inline">
+      <div class="d-flex">
+        <label class="form-check-label">
+          <input
+            [(ngModel)]="isManager"
+            class="form-check-input"
+            type="checkbox"
+          />
+          <span l10nTranslate>Set as group manager</span>
+          <fa-icon class="ms-1" [icon]="icons.faKey"></fa-icon>
+        </label>
+      </div>
+    </div>
+  </div>
+  <small l10nTranslate>As a manager, the user will be able to manage the group and its members.</small>
+</div>
+<div class="modal-footer">
+  <button (click)="layout.closeDialog()" class="btn btn-sm btn-secondary ms-auto" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()"
+          [disabled]="submitted" class="btn btn-sm btn-primary"
+          type="button"
+          l10nTranslate>
+    Confirm
+  </button>
+</div>
+
+

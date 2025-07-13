@@ -1,0 +1,199 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<!--Start Top Menu-->
+<div class="app-top-menu">
+  <button (click)="refresh()"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="'Refresh' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faRotate" [animation]="loading ? 'spin' : null"></fa-icon>
+  </button>
+  <button (click)="openDialog(true)"
+          [disabled]="!allowedAction.addGroup && !allowedAction.addUsers"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="(allowedAction.addGroup ? 'New personal group': 'Add members') | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faPlus"></fa-icon>
+  </button>
+  <button (click)="openDialog(false, true)"
+          class="btn btn-sm btn-secondary me-1"
+          [disabled]="!allowedAction.removeGroup && !allowedAction.removeUser"
+          [tooltip]="(allowedAction.removeGroup ? 'Delete group' : 'Remove from group') | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faMinus"></fa-icon>
+  </button>
+  <button (click)="openDialog()"
+          [disabled]="!allowedAction.editGroup && !allowedAction.editUser"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="(allowedAction.editGroup ? 'Edit group' : 'Edit user') | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faPen"></fa-icon>
+  </button>
+  @if (!currentGroup) {
+    <div class="btn-group btn-group-sm me-1" dropdown>
+      <button dropdownToggle
+              [class.disabled]="!selected"
+              class="btn btn-sm btn-secondary dropdown-toggle"
+              type="button">
+        <fa-icon [icon]="icons.faEllipsis"></fa-icon>
+      </button>
+      <ul *dropdownMenu class="dropdown-menu" role="menu">
+        <li role="menuitem">
+          <a (click)="browse(selected)" class="dropdown-item" [class.disabled]="!selected">
+            <span l10nTranslate><fa-icon [icon]="icons.faUsersRectangle"></fa-icon>See members</span>
+          </a>
+        </li>
+        <li role="menuitem">
+          <a (click)="openLeaveGroupDialog()" class="dropdown-item" [class.disabled]="!selected || !selected.isPersonalGroup">
+            <span l10nTranslate><fa-icon [icon]="icons.faRightFromBracket"></fa-icon>Leave group</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  }
+  <!--Start Filter Button-->
+  <app-input-filter class="d-none d-sm-block ms-auto"></app-input-filter>
+  <!--End Filter Button-->
+</div>
+<!--End Top Menu-->
+<!--Start Table Files Content-->
+<table class="app-table">
+  <thead>
+  <tr>
+    @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+      @if (th.value.show) {
+        <th (click)="sortBy(th.key)"
+            [style.width.%]="th.value.width"
+            [class.text-align-center]="th.value.textCenter"
+            [class.cursor-pointer]="th.value.sortable"
+            class="{{th.value.class}}"
+            l10nTranslate>
+          {{ th.value.label }}
+          @if (sortTable.sortParam.column === th.key) {
+            <fa-icon [icon]="sortTable.sortParam.asc ? icons.faArrowDown : icons.faArrowUp" [fixedWidth]="false"></fa-icon>
+          }
+        </th>
+      }
+    }
+  </tr>
+  </thead>
+</table>
+<app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                    [bufferAmount]="5"
+                    [items]="members | searchFilter:inputFilter.search()">
+  <table class="app-table">
+    <tbody tabindex="-1">
+      @for (m of scrollView?.viewPortItems; track m.mid) {
+        <tr (click)="onSelect(m)"
+            (contextmenu)="onTargetContextMenu($event, m)"
+            (pressup)="onTargetContextMenu($event, m)"
+            (tap)="browse(m)"
+            [class.selected]="m.mid === selected?.mid">
+          @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+            @if (th.value.show) {
+              <td [style.width.%]="th.value.width"
+                  [class.text-align-center]="th.value.textCenter"
+                  class="{{th.value.class}} {{th.value.newly ? 'prop-newly-' + m[th.value.newly] : ''}}">
+                @switch (th.key) {
+                  @case ('name') {
+                    <div class="d-flex align-items-center avatar">
+                      @if (m.isUser) {
+                        <img class="avatar-img" [src]="m.avatarUrl" alt="">
+                      } @else {
+                        <fa-icon [icon]="icons.GROUPS" class="{{m.isPersonalGroup ? 'circle-purple-icon' : 'circle-primary-icon'}}"></fa-icon>
+                      }
+                      <div class="d-flex flex-column">
+                        <span class="no-pointer-events" draggable="false">
+                          {{ m.name }}
+                          @if (m.isUser && m.isGroupManager) {
+                            <fa-icon class="m-0" [icon]="icons.faKey"></fa-icon>
+                          }
+                        </span>
+                        <span class="no-pointer-events text-muted fs-xxxs" draggable="false">{{ m.description }}</span>
+                      </div>
+                    </div>
+                  }
+                  @case ('type') {
+                    @if (m.isGroup) {
+                      <span l10nTranslate>{{ m.type }}</span>
+                    } @else {
+                      <span l10nTranslate>{{ m.isGroupManager ? 'Manager' : 'Member' }}</span>
+                    }
+                  }
+                  @case ('role') {
+                    <span l10nTranslate>{{ m.isGroupManager ? 'Manager' : 'Member' }}</span>
+                  }
+                  @case ('members') {
+                    @if (m.isGroup) {
+                      <span>{{ m.counts | joinCounts }}</span>
+                    }
+                  }
+                  @case ('memberSince') {
+                    {{ m.createdAt | amTimeAgo:true }}
+                  }
+                  @case ('createdAt') {
+                    {{ m.createdAt | amTimeAgo }}
+                  }
+                  @case ('modifiedAt') {
+                    {{ m.modifiedAt | amTimeAgo }}
+                  }
+                }
+              </td>
+            }
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</app-virtual-scroll>
+<!--End Table Files Content-->
+<!--Start Foot Content-->
+<div class="app-foot-menu">
+  <span class="mx-auto">{{ members.length }} {{ 'groups' | translate:locale.language }}</span>
+</div>
+<!--End Foot Content-->
+<!--Start Context Menu -->
+<context-menu #MainContextMenu>
+  @if (allowedAction.addGroup || allowedAction.addUsers) {
+    <ng-template (execute)="openDialog(true)" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faPlus"></fa-icon>
+        {{ allowedAction.addGroup ? 'Personal group' : 'Add members' }}</span>
+    </ng-template>
+  }
+  <ng-template (execute)="refresh()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faArrowRotateRight"></fa-icon>Refresh</span>
+  </ng-template>
+</context-menu>
+<context-menu #TargetContextMenu>
+  @if (selected?.isGroup) {
+    <ng-template (execute)="browse(selected)" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faUsersRectangle"></fa-icon>See members</span>
+    </ng-template>
+  }
+  @if (allowedAction.editGroup || allowedAction.editUser) {
+    <ng-template (execute)="openDialog()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faPen"></fa-icon>
+        {{ allowedAction.editGroup ? 'Edit group' : 'Edit user' }}</span>
+    </ng-template>
+  }
+  @if (allowedAction.removeGroup || allowedAction.removeUser) {
+    <ng-template (execute)="openDialog(false, true)" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faMinus"></fa-icon>
+        {{ allowedAction.removeGroup ? 'Delete group' : 'Remove from group' }}</span>
+    </ng-template>
+  }
+  @if (allowedAction.leaveGroup) {
+    <ng-template (execute)="openLeaveGroupDialog()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faRightFromBracket"></fa-icon>Leave group</span>
+    </ng-template>
+  }
+</context-menu>
+<!--End Context Menu-->

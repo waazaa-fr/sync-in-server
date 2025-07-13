@@ -1,0 +1,136 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.bg-gray-dark {
+  background-color: $gray-700;
+}
+
+.bg-gray-light {
+  background-color: $gray-light;
+}
+
+.bg-gray-light-important {
+  background-color: $gray-light !important;
+}
+
+.bg-gray-lighter {
+  background-color: $gray-lighter;
+}
+
+.bg-primary-purple {
+  background: linear-gradient(110deg, $primary 50%, $purple 50%);
+}
+
+.bg-purple {
+  background-color: $purple !important;
+}
+
+.bg-maroon {
+  background-color: $maroon;
+}
+
+.bg-green-active {
+  background-color: lighten($green, 5%) !important;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.bg-body {
+  background-color: $body-bg;
+}
+
+.bg-secondary-alt {
+  background-color: $secondary;
+  color: black;
+}
+
+.drag-over {
+  background-color: $secondary !important;
+  color: black !important;
+}
+
+.newly {
+  color: white;
+  border-bottom: .5px solid $gray-light;
+}
+
+.newly-0 {
+  @extend .newly;
+  background-color: transparent !important;
+}
+
+.newly-1, .prop-newly-1 {
+  @extend .newly-0;
+  background-color: $orange !important;
+}
+
+.newly-2, .prop-newly-2 {
+  @extend .newly-0;
+  background-color: lighten($orange, 15%) !important;
+}
+
+.newly-3, .prop-newly-3 {
+  @extend .newly-0;
+  background-color: lighten($orange, 30%) !important;
+  color: inherit !important;
+}
+
+.prop-newly-0 {
+  color: inherit;
+  background-color: inherit;
+}
+
+.prop-newly-4 {
+  @extend .text-danger
+}
+
+.sync-newly-0 {
+  color: white;
+  background-color: $red !important;
+}
+
+.sync-newly-1 {
+  @extend .sync-newly-0;
+  background-color: $primary !important;
+}
+
+.sync-newly-2 {
+  @extend .sync-newly-0;
+  background-color: lighten($primary, 15%) !important;
+}
+
+.sync-newly-3 {
+  @extend .sync-newly-0;
+  background-color: lighten($primary, 30%) !important;
+}
+
+.sync-newly-4 {
+  @extend .sync-newly-0;
+  background-color: $orange !important;
+}
+
+.comment-newly-0 {
+  border-bottom: .5px solid $gray-light;
+}
+
+.comment-newly-1 {
+  @extend .comment-newly-0;
+  color: white !important;
+  background-color: $green !important;
+}
+
+.comment-newly-2 {
+  @extend .comment-newly-1;
+  background-color: lighten($green, 5%) !important;
+}
+
+.comment-newly-3 {
+  @extend .comment-newly-1;
+  background-color: lighten($green, 12%) !important;
+  color: inherit !important;
+}

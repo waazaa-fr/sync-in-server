@@ -1,0 +1,31 @@
+{
+  "name": "sync-in-server",
+  "description": "Sync-in Server",
+  "author": {
+    "name": "Johan Legrand",
+    "email": "johan.legrand@sync-in.com"
+  },
+  "license": "AGPL-3.0-or-later",
+  "version": "1.0.0",
+  "private": true,
+  "engineStrict": true,
+  "engines": {
+    "node": ">=22.15.0"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build -ws",
+    "lint": "npm run lint -ws",
+    "start": "node dist/server/main.js",
+    "reset": "rm -Rf frontend/node_modules frontend/.angular backend/node_modules node_modules; npm cache clean --force",
+    "docker:build": "docker build -t $npm_package_name .",
+    "docker:buildx": "docker buildx build --platform linux/arm64,linux/amd64 --tag syncin/server:latest --tag syncin/server:${npm_package_version} . --push",
+    "docker:start": "docker run --name sync-in -it --rm -e SKIP_INIT=true -p 3000:3000 -v ./environment/environment.yaml:/app/environment/environment.yaml $npm_package_name"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.1"
+  }
+}

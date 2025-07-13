@@ -1,0 +1,52 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<!-- The user image in the menu -->
+<div class="sidebar-component-title">
+  <div class="d-flex flex-fill justify-content-between">
+    @if (!user?.isLink) {
+      <button class="btn btn-xs btn-secondary" (click)="collapseRSideBar()" type="button" [routerLink]=USER_PATH.BASE>
+        <fa-icon [icon]="icons.faUserAlt"></fa-icon>
+      </button>
+    }
+    <button class="btn btn-xs btn-secondary" (click)="toggleTheme()" type="button">
+      <fa-icon [icon]="icons.faCircleHalfStroke"></fa-icon>
+    </button>
+    @if (user?.isAdmin) {
+      <button class="btn btn-xs btn-secondary" (click)="collapseRSideBar()" type="button" routerLink="/admin">
+        <fa-icon [icon]="icons.faCog"></fa-icon>
+      </button>
+    }
+    @if (!store.isElectronApp() || store.isElectronApp() && store.userImpersonate()) {
+      <button (click)="logOut()" class="btn btn-xs btn-secondary" type="button">
+        <fa-icon [icon]="store.userImpersonate() ? icons.faUserSecret : icons.faPowerOff"></fa-icon>
+      </button>
+    }
+  </div>
+</div>
+<div class="user-header">
+  <div class="d-flex flex-column justify-content-center me-2">
+    <div class="avatar-lg">
+      <img class="avatar-img" [src]="userAvatar" alt="">
+      <span class="avatar-{{allOnlineStatus[user?.onlineStatus]}}"></span>
+    </div>
+  </div>
+  <div class="user-details">
+    @if (user?.isLink) {
+      <div l10nTranslate>Guest Link</div>
+    } @else {
+      <div>{{ user?.fullName }}</div>
+      <div class="small">{{ user?.email }}</div>
+    }
+    <select [ngModel]="user?.onlineStatus"
+            (ngModelChange)="setOnlineStatus($event)"
+            class="form-select form-select-sm mt-1">
+      @for (s of allOnlineStatus; track $index) {
+        <option [ngValue]="allOnlineStatus.indexOf(s)" l10nTranslate>{{ s | capitalize }}</option>
+      }
+    </select>
+  </div>
+</div>

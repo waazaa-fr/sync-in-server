@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+@if (sideBarHeader) {
+  <div class="sidebar-component-title">
+    <button (click)="onRefresh()" class="btn btn-xs btn-secondary">
+      <fa-icon [icon]="icons.faArrowRotateRight"></fa-icon>
+    </button>
+    @if (errorMsg) {
+      <span class="text-danger fs-xxs p-2" l10nTranslate>{{ errorMsg }}</span>
+    } @else {
+      <span l10nTranslate>Navigation Tree</span>
+    }
+  </div>
+}
+@if (copyMoveOn) {
+  <div class="px-2 pt-2 pb-0 fs-xs">
+    <div class="text-start text-truncate">
+      <span class="fs-xs fw-bold me-2" l10nTranslate><span l10nTranslate>Source</span>:</span>
+      @switch (store.filesSelection().length) {
+        @case (1) {
+          <span>
+            <span>{{ store.filesSelection()[0].name }}</span>
+          </span>
+        }
+        @case (0) {
+          <span>
+            <fa-icon [icon]="icons.faQuestion" class="fw-bold me-1"></fa-icon>
+          </span>
+        }
+        @default {
+          <span>
+            <span>{{ store.filesSelection().length }}</span>&nbsp;<span l10nTranslate>items</span>
+          </span>
+        }
+      }
+    </div>
+    <div class="text-start text-truncate mt-1">
+      <span class="fs-xs fw-bold me-2" l10nTranslate><span l10nTranslate>Destination</span>:</span>
+      <span>{{ selection?.data.name || '' }}</span>
+    </div>
+    <div class="d-flex justify-content-between mt-2">
+      <button (click)="actionMove()" [disabled]="!selection || !store.filesSelection().length || !srcAllowed || !dstAllowed" class="btn btn-xxs btn-primary" type="button" l10nTranslate>
+        <fa-icon [icon]="icons.faArrowsAlt"></fa-icon>
+        Move
+      </button>
+      <button (click)="actionCopy()" [disabled]="!selection || !store.filesSelection().length || !dstAllowed" class="btn btn-xxs btn-primary" type="button" l10nTranslate>
+        <fa-icon [icon]="icons.faClone"></fa-icon>
+        Copy
+      </button>
+      <button (click)="actionCancel()" class="btn btn-xxs btn-secondary" type="button" l10nTranslate>
+        <fa-icon [icon]="icons.faTimes"></fa-icon>
+        Cancel
+      </button>
+    </div>
+  </div>
+  <hr class="mx-0 mt-2 mb-0">
+}
+<div appAutoResize [overFlowX]="'auto'" [resizeOffset]="resizeOffset" [useMaxHeight]="false">
+  <tree-root #tree [nodes]="nodes" [options]="options">
+    <ng-template #treeNodeWrapperTemplate let-index="index" let-node>
+      <div (click)="node.mouseAction('click', $event)"
+           (tap)="node.mouseAction('dblClick', $event)"
+           [class.tree-selected]="node.isActive"
+           [class.tree-disabled]="!node.data.enabled"
+           [style.padding-left]="node.getNodePadding()"
+           class="node-wrapper">
+        <tree-node-expander [class.toggle-children-file]="!node.data.isDir"
+                            [class.toggle-children-shared]="node.data.inShare"
+                            [node]="node">
+        </tree-node-expander>
+        <div [class.node-content-wrapper-active]="node.isActive" class="node-content-wrapper">
+          <tree-node-content [index]="index" [node]="node"></tree-node-content>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template #loadingTemplate>
+      <span>
+        <fa-icon [icon]="icons.faSpinner" animation="spin" class="fw-bold"></fa-icon>
+      </span>
+    </ng-template>
+  </tree-root>
+</div>

@@ -1,0 +1,198 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<!--Start Top Menu-->
+<div class="app-top-menu">
+  <button (click)="loadUsersOrGuests()"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="'Refresh' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faRotate" [animation]="loading ? 'spin' : null"></fa-icon>
+  </button>
+  <button (click)="openDialog(true)"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="(guestsView ? 'New guest' : 'New user') | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faUserPlus"></fa-icon>
+  </button>
+  <button (click)="openDialog()"
+          [disabled]="!selected"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="(guestsView ? 'Edit guest' : 'Edit user') | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faUserPen"></fa-icon>
+  </button>
+  <button (click)="impersonateIdentity()"
+          [disabled]="!selected"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="'Impersonate identity' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faUserSecret"></fa-icon>
+  </button>
+  <div class="ms-auto">
+    <!--Start Filter Button-->
+    <button btnCheckbox
+            [ngModel]="guestsView"
+            (ngModelChange)="onGuestsView($event)"
+            type="button"
+            class="btn btn-sm btn-custom me-1">
+      <div class="d-flex align-items-center">
+        <fa-icon [icon]="guestsView ? icons.faToggleOn : icons.faToggleOff" class="me-2"></fa-icon>
+        <span l10nTranslate>Guests</span>
+      </div>
+    </button>
+    <div class="btn-group btn-group-sm">
+      <app-input-filter class="d-none d-sm-block"></app-input-filter>
+    </div>
+    <!--End Filter Button-->
+  </div>
+</div>
+<!--End Top Menu-->
+<!--Start Table Files Content-->
+<table class="app-table">
+  <thead>
+  <tr>
+    @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+      @if (th.value.show) {
+        <th (click)="sortBy(th.key)"
+            [style.width.%]="th.value.width"
+            [class.text-align-center]="th.value.textCenter"
+            [class.cursor-pointer]="th.value.sortable"
+            class="{{th.value.class}}"
+            l10nTranslate>
+          {{ th.value.label }}
+          @if (sortTable.sortParam.column === th.key) {
+            <fa-icon [icon]="sortTable.sortParam.asc ? icons.faArrowDown : icons.faArrowUp" [fixedWidth]="false"></fa-icon>
+          }
+        </th>
+      }
+    }
+  </tr>
+  </thead>
+</table>
+<app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                    [bufferAmount]="5"
+                    [items]="users | searchFilter:inputFilter.search()">
+  <table class="app-table">
+    <tbody tabindex="-1">
+      @for (u of scrollView?.viewPortItems; track u.id) {
+        <tr (click)="onSelect(u)"
+            (contextmenu)="onTargetContextMenu($event, u)"
+            (pressup)="onTargetContextMenu($event, u)"
+            (tap)="openDialog()"
+            [class.disabled]="!u.isActive"
+            [class.selected]="u.id === selected?.id">
+          @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+            @if (th.value.show) {
+              <td [style.width.%]="th.value.width"
+                  [class.text-align-center]="th.value.textCenter"
+                  class="{{th.value.class}} {{th.value.newly ? 'prop-newly-' + u[th.value.newly] : ''}}">
+                @switch (th.key) {
+                  @case ('login') {
+                    <div class="d-flex align-items-center avatar">
+                      <img class="avatar-img" [src]="u.avatarUrl" alt="">
+                      <div class="d-flex flex-column">
+                        <span class="no-pointer-events" draggable="false">
+                          {{ u.login }}
+                          @if (u.isAdmin) {
+                            <fa-icon class="m-0" [icon]="icons.faKey"></fa-icon>
+                          }
+                        </span>
+                        <span class="no-pointer-events text-muted fs-xxxs" draggable="false">{{ u.email }}</span>
+                      </div>
+                    </div>
+                  }
+                  @case ('fullName') {
+                    <div class="d-flex flex-column">
+                      <span class="no-pointer-events" draggable="false">{{ u.fullName }}</span>
+                      @if (u.isAdmin) {
+                        <span class="no-pointer-events text-muted fs-xxxs" draggable="false" l10nTranslate>{{ u.userRoleText }}</span>
+                      }
+                    </div>
+                  }
+                  @case ('managers') {
+                    @for (m of u.managers; track m.mid) {
+                      <app-user-avatar [user]="m" [isMember]="true"></app-user-avatar>
+                    }
+                  }
+                  @case ('storage') {
+                    @if (u.storageUsage) {
+                      <app-storage-usage [item]="u"></app-storage-usage>
+                    }
+                  }
+                  @case ('currentIp') {
+                    <div class="d-flex flex-column">
+                      <div>{{ u.currentIp }}</div>
+                      <div>{{ u.lastIp }}</div>
+                    </div>
+                  }
+                  @case ('isActive') {
+                    <span class="{{u.isActive ? 'text-success' : 'text-danger'}}" l10nTranslate>
+                      @if (!u.isActive && u.passwordAttempts) {
+                        too many login attempts
+                      } @else {
+                        {{ u.userIsActiveText }}
+                      }
+                  </span>
+                  }
+                  @case ('currentAccess') {
+                    @if (u.currentAccess) {
+                      <div class="d-flex justify-content-center"
+                           (mouseover)="u.currentAccessHover = true"
+                           (focus)="u.currentAccessHover = true"
+                           (mouseleave)="u.currentAccessHover = false">
+                        @if (u.currentAccessHover) {
+                          <div class="d-flex flex-column">
+                            <div>{{ u.currentAccess | amDateFormat }}</div>
+                            <div>{{ u.lastAccess | amDateFormat }}</div>
+                          </div>
+                        } @else {
+                          {{ u.hTimeAgo }}
+                        }
+                      </div>
+                    } @else {
+                      <span l10nTranslate>never</span>
+                    }
+                  }
+                }
+              </td>
+            }
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</app-virtual-scroll>
+<!--End Table Files Content-->
+<!--Start Foot Content-->
+<div class="app-foot-menu">
+  <span class="mx-auto">{{ users.length }} {{ (guestsView ? 'guests' : 'users') | translate:locale.language }}</span>
+</div>
+<!--End Foot Content-->
+<!--Start Context Menu -->
+<context-menu #MainContextMenu>
+  <ng-template (execute)="openDialog(true)" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faUserPlus"></fa-icon>New {{ guestsView ? 'guest' : 'user' }}</span>
+  </ng-template>
+  <ng-template [divider]="true" contextMenuItem></ng-template>
+  <ng-template (execute)="loadUsersOrGuests()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faArrowRotateRight"></fa-icon>Refresh</span>
+  </ng-template>
+</context-menu>
+<context-menu #TargetContextMenu>
+  <ng-template (execute)="openDialog()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faUserPen"></fa-icon>Edit {{ guestsView ? 'guest' : 'user' }}</span>
+  </ng-template>
+  <ng-template [divider]="true" contextMenuItem></ng-template>
+  <ng-template (execute)="impersonateIdentity()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faUserSecret"></fa-icon>Impersonate identity</span>
+  </ng-template>
+</context-menu>
+<!--End Context Menu-->

@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="sidebar-component-title">
+  <div class="input-group mb-0">
+    <input #CommentCreate
+           (keyup.enter)="postComment()"
+           [disabled]="!file()"
+           [placeholder]="'Write a comment ...' | translate:locale.language"
+           class="form-control form-control-sm"
+           type="text"
+           appAutofocus>
+    <button (click)="postComment()"
+            [disabled]="!CommentCreate.value"
+            class="btn btn-xs btn-primary"
+            role="button"
+            type="button" l10nTranslate>
+      Add
+    </button>
+  </div>
+</div>
+@if (comments.length) {
+  <div appAutoResize class="fs-xxs p-2">
+    @for (comment of comments; track comment.id) {
+      <div class="mb-1 app-small-card app-comment rounded">
+        <div class="d-flex px-2 pt-2 pb-1">
+          <app-user-avatar [user]="comment.author" [width]="24" [height]="24"></app-user-avatar>
+          <div class="align-self-center ms-1">
+            <b>{{ comment.author.isAuthor ? ('Me' | translate:locale.language) : comment.author.fullName }}</b>
+          </div>
+          <div class="ms-auto align-self-center" style="font-size: 14px">
+            @if (comment.author.isAuthor || comment.isFileOwner) {
+              <i (click)="onEditComment(comment)" class="cursor-pointer">
+                <fa-icon [icon]="icons.faEdit"></fa-icon>
+              </i>
+            }
+          </div>
+        </div>
+        <div class="pb-2 px-2">
+          @if (comment.isEdited) {
+            <textarea #CommentUpdate [ngModel]="comment.content" [disabled]="!comment.author.isAuthor && comment.isFileOwner" class="form-control form-control-sm mt-1 mb-2" required></textarea>
+            <div class="d-flex">
+              <button (click)="updateComment(comment, CommentUpdate.value)"
+                      [disabled]="!CommentUpdate.value || comment.content === CommentUpdate.value"
+                      class="btn btn-xxs btn-primary me-auto"
+                      role="button"
+                      type="button"
+                      l10nTranslate>
+                Update
+              </button>
+              <button (click)="onEditComment(comment)"
+                      class="btn btn-xxs btn-secondary align-content-around"
+                      role="button"
+                      type="button"
+                      l10nTranslate>
+                Cancel
+              </button>
+              <button (click)="removeComment(comment)"
+                      class="btn btn-xxs btn-danger ms-auto"
+                      role="button"
+                      type="button"
+                      l10nTranslate>
+                Remove
+              </button>
+            </div>
+          } @else {
+            <div>{{ comment.content }}</div>
+            <span (mouseleave)="comment.isHover = false"
+                  (mouseover)="comment.isHover = true"
+                  (focus)="comment.isHover = true"
+                  class="text-muted no-select pt-1 fs-xxxs">
+            @if (comment.isHover) {
+              <span>{{ comment.dateToShow | amDateFormat }}</span>
+            } @else {
+              @if (comment.wasModified) {
+                <span class="me-1" l10nTranslate>modified</span>
+              }
+              <span>{{ comment.dateToShow | amTimeAgo }}</span>
+            }
+          </span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}
+

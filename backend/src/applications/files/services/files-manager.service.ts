@@ -1,0 +1,545 @@
+/*
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+import { HttpService } from '@nestjs/axios'
+import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import archiver, { Archiver, ArchiverError } from 'archiver'
+import { PNGStream } from 'canvas'
+import fs from 'node:fs'
+import path from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import { extract as extractTar } from 'tar'
+import { FastifyAuthenticatedRequest } from '../../../authentication/interfaces/auth-request.interface'
+import { generateThumbnail } from '../../../common/image'
+import { HTTP_METHOD } from '../../applications.constants'
+import { SPACE_OPERATION } from '../../spaces/constants/spaces'
+import { FastifySpaceRequest } from '../../spaces/interfaces/space-request.interface'
+import { SpaceEnv } from '../../spaces/models/space-env.model'
+import { realTrashPathFromSpace } from '../../spaces/utils/paths'
+import { canAccessToSpace, haveSpaceEnvPermissions } from '../../spaces/utils/permissions'
+import { UserModel } from '../../users/models/user.model'
+import { DEPTH, LOCK_DEPTH } from '../../webdav/constants/webdav'
+import { tarGzExtension } from '../constants/compress'
+import { COMPRESSION_EXTENSION, DEFAULT_HIGH_WATER_MARK } from '../constants/files'
+import { FILE_OPERATION } from '../constants/operations'
+import { DOCUMENT_TYPE, SAMPLE_PATH_WITHOUT_EXT } from '../constants/samples'
+import { CompressFileDto } from '../dto/file-operations.dto'
+import { FileTaskEvent } from '../events/file-task-event'
+import { FileDBProps } from '../interfaces/file-db-props.interface'
+import { FileLock } from '../interfaces/file-lock.interface'
+import { FileError } from '../models/file-error'
+import { LockConflict } from '../models/file-lock-error'
+import {
+  copyFiles,
+  createEmptyFile,
+  dirName,
+  dirSize,
+  fileName,
+  fileSize,
+  getMimeType,
+  isPathExists,
+  isPathIsDir,
+  makeDir,
+  moveFiles,
+  removeFiles,
+  touchFile,
+  uniqueDatedFilePath,
+  uniqueFilePathFromDir,
+  writeFromStream,
+  writeFromStreamAndChecksum
+} from '../utils/files'
+import { SendFile } from '../utils/send-file'
+import { extractZip } from '../utils/unzip-file'
+import { FilesLockManager } from './files-lock-manager.service'
+import { FilesQueries } from './files-queries.service'
+
+@Injectable()
+export class FilesManager {
+  /* Spaces permissions are checked in the space guard, except for the copy/move destination */
+  private logger = new Logger(FilesManager.name)
+
+  constructor(
+    private readonly http: HttpService,
+    private readonly filesQueries: FilesQueries,
+    private readonly filesLockManager: FilesLockManager
+  ) {}
+
+  sendFileFromSpace(space: SpaceEnv, asAttachment = false, downloadName = ''): SendFile {
+    return new SendFile(space.realPath, asAttachment, downloadName)
+  }
+
+  async saveStream(
+    user: UserModel,
+    space: SpaceEnv,
+    req: FastifyAuthenticatedRequest,
+    options: {
+      checksumAlg: string
+      tmpPath?: string
+    }
+  ): Promise<string>
+  async saveStream(user: UserModel, space: SpaceEnv, req: FastifyAuthenticatedRequest, options?: any): Promise<boolean>
+  async saveStream(
+    user: UserModel,
+    space: SpaceEnv,
+    req: FastifyAuthenticatedRequest,
+    options?: { dav?: { depth: LOCK_DEPTH; lockTokens: string[] }; checksumAlg?: string; tmpPath?: string }
+  ): Promise<boolean | string> {
+    // if tmpPath is used, we lock the final destination during the transfer
+    // space.realPath is replaced by tmpPath (if allowed), if the move operation failed we remove the tmp file
+    const fExists = await isPathExists(space.realPath)
+    const fTmpExists = options?.tmpPath ? await isPathExists(options.tmpPath) : false
+    if (fExists && req.method === HTTP_METHOD.POST) {
+      throw new FileError(HttpStatus.METHOD_NOT_ALLOWED, 'Resource already exists')
+    }
+    if (fExists && (await isPathIsDir(space.realPath))) {
+      throw new FileError(HttpStatus.METHOD_NOT_ALLOWED, 'The location is a directory')
+    }
+    if (options?.tmpPath) {
+      // ensure tmpPath parent dir exists
+      await makeDir(dirName(options.tmpPath), true)
+    } else if (!(await isPathExists(dirName(space.realPath)))) {
+      throw new FileError(HttpStatus.CONFLICT, 'Parent must exists')
+    }
+    let fileLock: FileLock
+    if (options?.dav) {
+      // check locks
+      await this.filesLockManager.checkConflicts(space.dbFile, options?.dav?.depth || DEPTH.RESOURCE, {
+        userId: user.id,
+        lockTokens: options.dav?.lockTokens
+      })
+    } else {
+      // create lock if there is no webdav context
+      const [ok, lock] = await this.filesLockManager.create(user, space.dbFile, DEPTH.RESOURCE)
+      if (!ok) {
+        throw new LockConflict(lock, 'Conflicting lock')
+      }
+      fileLock = lock
+    }
+    // check range
+    let startRange = 0
+    if ((fExists || fTmpExists) && req.headers['content-range']) {
+      // with PUT method, some webdav clients use the `content-range` header,
+      // which is normally reserved for a response to a request containing the `range` header.
+      // However, for more compatibility let's accept it
+      const match = /\d+/.exec(req.headers['content-range'])
+      if (!match.length) {
+        if (fileLock) {
+          await this.filesLockManager.removeLock(fileLock.key)
+        }
+        throw new FileError(HttpStatus.BAD_REQUEST, 'Content-range : header is malformed')
+      }
+      startRange = parseInt(match[0], 10)
+      const size = await fileSize(options?.tmpPath || space.realPath)
+      if (startRange !== size) {
+        if (fileLock) {
+          await this.filesLockManager.removeLock(fileLock.key)
+        }
+        throw new FileError(HttpStatus.BAD_REQUEST, 'Content-range : start offset does not match the current file size')
+      }
+    }
+    // todo: check file in db to update
+    // todo : versioning here
+    let checksum: string
+    try {
+      if (options?.checksumAlg) {
+        checksum = await writeFromStreamAndChecksum(options?.tmpPath || space.realPath, req.raw, startRange, options.checksumAlg)
+      } else {
+        await writeFromStream(options?.tmpPath || space.realPath, req.raw, startRange)
+      }
+      if (options?.tmpPath) {
+        try {
+          // ensure parent path exists
+          await makeDir(path.dirname(space.realPath), true)
+          // move the uploaded file to destination
+          await moveFiles(options.tmpPath, space.realPath, true)
+        } catch (e) {
+          // cleanup tmp file
+          await removeFiles(options.tmpPath)
+          this.logger.error(`${this.saveStream.name} - unable to move ${options.tmpPath} -> ${space.realPath} : ${e}`)
+          throw new FileError(HttpStatus.INTERNAL_SERVER_ERROR, 'Unable to move tmp file to dst file')
+        }
+      }
+    } finally {
+      if (fileLock) {
+        await this.filesLockManager.removeLock(fileLock.key)
+      }
+    }
+    if (options?.checksumAlg) {
+      return checksum
+    }
+    return fExists
+  }
+
+  async saveMultipart(user: UserModel, space: SpaceEnv, req: FastifySpaceRequest) {
+    /* Accepted methods:
+        POST: create new resource
+        PUT: create or update new resource (even if parent path does not exist)
+    */
+    const realParentPath = dirName(space.realPath)
+
+    if (req.method === HTTP_METHOD.POST) {
+      if (await isPathExists(space.realPath)) {
+        throw new FileError(HttpStatus.BAD_REQUEST, 'Resource already exists')
+      }
+      if (!(await isPathExists(realParentPath))) {
+        throw new FileError(HttpStatus.BAD_REQUEST, 'Parent must exists')
+      }
+      if (!(await isPathIsDir(realParentPath))) {
+        throw new FileError(HttpStatus.BAD_REQUEST, 'Parent must be a directory')
+      }
+    }
+
+    for await (const part of req.files()) {
+      const partFileName = part.filename.normalize()
+      const dstDir = path.join(realParentPath, dirName(partFileName))
+      const dstFile = path.join(dstDir, fileName(partFileName))
+      // make dir in space
+      if (!(await isPathExists(dstDir))) {
+        await makeDir(dstDir, true)
+      }
+      // create lock
+      const dbFile = { ...space.dbFile, path: path.join(dirName(space.dbFile.path), partFileName) }
+      const [ok, fileLock] = await this.filesLockManager.create(user, dbFile, DEPTH.RESOURCE)
+      if (!ok) throw new LockConflict(fileLock, 'Conflicting lock')
+      // do
+      try {
+        await pipeline(part.file, fs.createWriteStream(dstFile, { highWaterMark: DEFAULT_HIGH_WATER_MARK }))
+      } finally {
+        await this.filesLockManager.removeLock(fileLock.key)
+      }
+    }
+  }
+
+  async touch(user: UserModel, space: SpaceEnv, mtime: number, checkLocks = true): Promise<void> {
+    if (!(await isPathExists(space.realPath))) {
+      throw new FileError(HttpStatus.NOT_FOUND, 'Location not found')
+    }
+    if (checkLocks) {
+      await this.filesLockManager.checkConflicts(space.dbFile, DEPTH.RESOURCE, { userId: user.id })
+    }
+    // todo: update mtime in last files ( & in db file ?)
+    await touchFile(space.realPath, mtime)
+  }
+
+  async mkFile(user: UserModel, space: SpaceEnv, overwrite = false, checkLocks = true, checkDocument = false): Promise<void> {
+    if (!overwrite && (await isPathExists(space.realPath))) {
+      throw new FileError(HttpStatus.BAD_REQUEST, 'Resource already exists')
+    }
+    if (checkLocks) {
+      await this.filesLockManager.checkConflicts(space.dbFile, DEPTH.RESOURCE, { userId: user.id })
+    }
+    // use sample documents when possible
+    const fileExtension = path.extname(space.realPath)
+    if (checkDocument && fileExtension !== '.txt' && Object.values(DOCUMENT_TYPE).indexOf(fileExtension) > -1) {
+      const srcSample = path.join(__dirname, `${SAMPLE_PATH_WITHOUT_EXT}${fileExtension}`)
+      await copyFiles(srcSample, space.realPath)
+      return touchFile(space.realPath)
+    } else {
+      return createEmptyFile(space.realPath)
+    }
+  }
+
+  async mkDir(user: UserModel, space: SpaceEnv, recursive = false, dav?: { depth: LOCK_DEPTH; lockTokens: string[] }): Promise<void> {
+    if (!recursive) {
+      if (await isPathExists(space.realPath)) {
+        throw new FileError(HttpStatus.METHOD_NOT_ALLOWED, 'Resource already exists')
+      } else if (!(await isPathExists(dirName(space.realPath)))) {
+        throw new FileError(HttpStatus.CONFLICT, 'Parent must exists')
+      }
+    }
+    await this.filesLockManager.checkConflicts(space.dbFile, dav?.depth || DEPTH.RESOURCE, { userId: user.id, lockTokens: dav?.lockTokens })
+    await makeDir(space.realPath, recursive)
+  }
+
+  async copyMove(
+    user: UserModel,
+    srcSpace: SpaceEnv,
+    dstSpace: SpaceEnv,
+    isMove: boolean,
+    overwrite = false,
+    dav?: { depth: LOCK_DEPTH; lockTokens: string[] }
+  ): Promise<void> {
+    // checks
+    if (!canAccessToSpace(user, dstSpace)) {
+      this.logger.warn(`${this.copyMove.name} - is not allowed to access to this space repository : ${dstSpace.repository}`)
+      throw new FileError(HttpStatus.FORBIDDEN, 'You are not allowed to access to this repository')
+    }
+    if (!haveSpaceEnvPermissions(dstSpace, SPACE_OPERATION.ADD)) {
+      this.logger.warn(`${this.copyMove.name} - is not allowed to copy/move on this space : *${dstSpace.alias}* (${dstSpace.id}) : ${dstSpace.url}`)
+      throw new FileError(HttpStatus.FORBIDDEN, 'You are not allowed to copy/move on the destination')
+    }
+    if (dstSpace.quotaIsExceeded) {
+      this.logger.warn(`${this.copyMove.name} - quota is exceeded for *${dstSpace.alias}* (${dstSpace.id})`)
+      throw new FileError(HttpStatus.INSUFFICIENT_STORAGE, 'Quota is exceeded')
+    }
+    if (!(await isPathExists(srcSpace.realPath))) {
+      throw new FileError(HttpStatus.NOT_FOUND, 'Location not found')
+    }
+    if (!(await isPathExists(dirName(dstSpace.realPath)))) {
+      throw new FileError(HttpStatus.CONFLICT, 'Parent must exists')
+    }
+    if (srcSpace.realPath === dstSpace.realPath) {
+      throw new FileError(HttpStatus.FORBIDDEN, 'Cannot copy/move source onto itself')
+    }
+    if (`${dstSpace.realPath}/`.startsWith(`${srcSpace.realPath}/`)) {
+      throw new FileError(HttpStatus.FORBIDDEN, 'Cannot copy/move source below itself')
+    }
+    if (dirName(srcSpace.url) === dirName(dstSpace.url) && dirName(srcSpace.realPath) !== dirName(dstSpace.realPath)) {
+      /* Handle renaming a space file with the same name as a space root :
+        srcSpace.url = '/space/sync-in/code2.ts' (a space file)
+        srcSpace.realPath = '/home/sync-in/spaces/sync-in/code2.ts
+        dstSpace.url = '/space/sync-in/code.ts' (a space root)
+        dstSpace.realPath = '/home/sync-in/users/jo/files/code2.ts !!
+       */
+      throw new FileError(HttpStatus.BAD_REQUEST, 'An anchored file already has this name')
+    }
+    if (!overwrite && (await isPathExists(dstSpace.realPath))) {
+      /* Handle case-sensitive (in renaming context):
+        srcSpace.url = '/space/sync-in/code.ts'
+        dstSpace.url = '/space/sync-in/code.TS'
+       The destination exists because it's the same file, bypass this
+     */
+      if (!(isMove && srcSpace.realPath.toLowerCase() === dstSpace.realPath.toLowerCase())) {
+        throw new FileError(dav ? HttpStatus.PRECONDITION_FAILED : HttpStatus.BAD_REQUEST, 'The destination already exists')
+      }
+    }
+
+    const isDir = await isPathIsDir(srcSpace.realPath)
+
+    if (dstSpace.storageQuota) {
+      /* Skip validation when moving to the same space; for copy operations, run all checks. */
+      if (!isMove || (isMove && srcSpace.id !== dstSpace.id)) {
+        const size = isDir ? (await dirSize(srcSpace.realPath))[0] : await fileSize(srcSpace.realPath)
+        if (dstSpace.willExceedQuota(size)) {
+          this.logger.warn(`${this.copyMove.name} - quota will be exceeded for *${dstSpace.alias}* (${dstSpace.id})`)
+          throw new FileError(HttpStatus.INSUFFICIENT_STORAGE, 'Quota will be exceeded')
+        }
+      }
+    }
+
+    // check lock conflicts on source & destination
+    let recursive: boolean
+    let depth: LOCK_DEPTH
+    if (dav?.depth) {
+      recursive = dav.depth === DEPTH.INFINITY
+      depth = dav.depth
+    } else {
+      recursive = isDir
+      depth = recursive ? DEPTH.INFINITY : DEPTH.RESOURCE
+    }
+    if (isMove) {
+      // check source
+      await this.filesLockManager.checkConflicts(srcSpace.dbFile, depth, { userId: user.id, lockTokens: dav?.lockTokens })
+    }
+    // check destination
+    await this.filesLockManager.checkConflicts(dstSpace.dbFile, depth, { userId: user.id, lockTokens: dav?.lockTokens })
+
+    // overwrite
+    if (overwrite && (await isPathExists(dstSpace.realPath))) {
+      // todo : versioning here
+      await this.delete(user, dstSpace)
+    }
+
+    // send to task watcher
+    if (srcSpace.task?.cacheKey) {
+      if (!isDir) srcSpace.task.props.totalSize = await fileSize(srcSpace.realPath)
+      FileTaskEvent.emit('startWatch', srcSpace, isMove ? FILE_OPERATION.MOVE : FILE_OPERATION.COPY, dstSpace.realPath)
+    }
+
+    // do
+    if (isMove) {
+      await moveFiles(srcSpace.realPath, dstSpace.realPath, overwrite)
+      return this.filesQueries.moveFiles(srcSpace.dbFile, dstSpace.dbFile, isDir)
+    }
+    return copyFiles(srcSpace.realPath, dstSpace.realPath, overwrite, recursive)
+  }
+
+  async delete(user: UserModel, space: SpaceEnv, dav?: { lockTokens: string[] }): Promise<void> {
+    if (!(await isPathExists(space.realPath))) {
+      throw new FileError(HttpStatus.NOT_FOUND, 'Location not found')
+    }
+    // check lock conflicts
+    const isDir = await isPathIsDir(space.realPath)
+    await this.filesLockManager.checkConflicts(space.dbFile, isDir ? DEPTH.INFINITY : DEPTH.RESOURCE, {
+      userId: user.id,
+      lockTokens: dav?.lockTokens
+    })
+    // file system deletion
+    let forceDeleteInDB = false
+    if (space.inTrashRepository) {
+      await removeFiles(space.realPath)
+    } else {
+      const baseTrashPath = realTrashPathFromSpace(user, space)
+      if (baseTrashPath) {
+        const name = fileName(space.realPath)
+        const trashDir = path.join(baseTrashPath, dirName(space.dbFile.path))
+        const trashFile = path.join(trashDir, name)
+        if (!(await isPathExists(trashDir))) {
+          await makeDir(trashDir, true)
+        }
+        if (await isPathExists(trashFile)) {
+          // if a resource already exists in the trash, rename it with the date
+          const dstTrash = await uniqueDatedFilePath(trashFile)
+          // move the resource on fs
+          await moveFiles(trashFile, dstTrash.path)
+          // move the resource in db
+          const trashFileDB: FileDBProps = { ...space.dbFile, inTrash: true }
+          const dstTrashFileDB: FileDBProps = { ...trashFileDB, path: path.join(dirName(trashFileDB.path), fileName(dstTrash.path)) }
+          this.filesQueries
+            .moveFiles(trashFileDB, dstTrashFileDB, dstTrash.isDir)
+            .catch((e: Error) => this.logger.error(`${this.delete.name} - ${e}`))
+        }
+        await moveFiles(space.realPath, trashFile, true)
+      } else {
+        this.logger.log(`Unable to find trash path for space - *${space.alias}* (${space.id}) : delete permanently : ${space.realPath}`)
+        // todo: define a default trash for external paths
+        forceDeleteInDB = true
+        await removeFiles(space.realPath)
+      }
+    }
+    // remove locks, these locks have already been checked in the `checkConflicts` function
+    if (isDir) {
+      this.filesLockManager.removeChildLocks(user, space.dbFile).catch((e: Error) => this.logger.error(`${this.delete.name} - ${e}`))
+    }
+    for (const lock of await this.filesLockManager.getLocksByPath(space.dbFile)) {
+      this.filesLockManager.removeLock(lock.key).catch((e: Error) => this.logger.error(`${this.delete.name} - ${e}`))
+    }
+    // delete or move to trash the files in db
+    return this.filesQueries.deleteFiles(space.dbFile, isDir, forceDeleteInDB)
+  }
+
+  async downloadFromUrl(user: UserModel, space: SpaceEnv, url: string): Promise<void> {
+    const rPath = await uniqueFilePathFromDir(space.realPath)
+    // create lock
+    const dbFile = space.dbFile
+    dbFile.path = path.join(dirName(dbFile.path), fileName(space.realPath))
+    const [ok, fileLock] = await this.filesLockManager.create(user, dbFile, DEPTH.RESOURCE)
+    if (!ok) {
+      throw new LockConflict(fileLock, 'Conflicting lock')
+    }
+    // tasking
+    if (space.task.cacheKey) {
+      try {
+        const pr = await this.http.axiosRef({ method: HTTP_METHOD.HEAD, url: url })
+        if ('content-length' in pr.headers) {
+          space.task.props.totalSize = parseInt(pr.headers['content-length'], 10) || null
+        }
+      } catch (e) {
+        this.logger.warn(`${this.downloadFromUrl.name} - ${e}`)
+      }
+      FileTaskEvent.emit('startWatch', space, FILE_OPERATION.DOWNLOAD, rPath)
+    }
+    // do
+    try {
+      const r = await this.http.axiosRef({ method: HTTP_METHOD.GET, url: url, responseType: 'stream' })
+      await writeFromStream(rPath, r.data)
+    } finally {
+      await this.filesLockManager.removeLock(fileLock.key)
+    }
+  }
+
+  async compress(user: UserModel, space: SpaceEnv, dto: CompressFileDto): Promise<void> {
+    const srcPath = dirName(space.realPath)
+    // todo: a guest link tasksPath should be in specific directory (guest link has no home)
+    const dstPath = await uniqueFilePathFromDir(path.join(dto.compressInDirectory ? srcPath : user.tasksPath, `${dto.name}.${dto.extension}`))
+    const archive: Archiver = archiver('tar', {
+      gzip: dto.extension === tarGzExtension,
+      gzipOptions: {
+        level: 9
+      }
+    })
+    // create lock
+    let fileLock: FileLock
+    if (dto.compressInDirectory) {
+      const dbFile = space.dbFile
+      dbFile.path = path.join(dirName(dbFile.path), fileName(dstPath))
+      const [ok, lock] = await this.filesLockManager.create(user, dbFile, DEPTH.RESOURCE)
+      if (!ok) {
+        throw new LockConflict(lock, 'Conflicting lock')
+      }
+      fileLock = lock
+    }
+    if (space.task?.cacheKey) {
+      space.task.props.compressInDirectory = dto.compressInDirectory
+      FileTaskEvent.emit('startWatch', space, FILE_OPERATION.COMPRESS, dstPath)
+    }
+    // do
+    try {
+      archive.on('error', (error: ArchiverError) => {
+        throw error
+      })
+      const dstStream = fs.createWriteStream(dstPath, { highWaterMark: DEFAULT_HIGH_WATER_MARK })
+      archive.pipe(dstStream)
+      for (const f of dto.files) {
+        if (await isPathIsDir(f.path)) {
+          archive.directory(f.path, dto.files.length > 1 ? fileName(f.path) : false)
+        } else {
+          archive.file(f.path, {
+            name: f.rootAlias ? f.name : fileName(f.path)
+          })
+        }
+      }
+      await archive.finalize()
+    } finally {
+      if (fileLock) {
+        await this.filesLockManager.removeLock(fileLock.key)
+      }
+    }
+  }
+
+  async decompress(user: UserModel, space: SpaceEnv): Promise<void> {
+    // checks
+    if (!(await isPathExists(space.realPath))) {
+      throw new FileError(HttpStatus.NOT_FOUND, 'Location not found')
+    }
+    const extension = path.extname(space.realPath)
+    if (!COMPRESSION_EXTENSION.has(extension)) {
+      throw new FileError(HttpStatus.BAD_REQUEST, `${extension} is not supported`)
+    }
+    // make destination folder
+    const dstPath = await uniqueFilePathFromDir(path.join(dirName(space.realPath), path.basename(space.realPath, extension)))
+    await makeDir(dstPath)
+    // create lock
+    const dbFile = space.dbFile
+    dbFile.path = path.join(dirName(dbFile.path), fileName(dstPath))
+    const [ok, fileLock] = await this.filesLockManager.create(user, dbFile, DEPTH.INFINITY)
+    if (!ok) {
+      throw new LockConflict(fileLock, 'Conflicting lock')
+    }
+    // tasking
+    if (space.task?.cacheKey) FileTaskEvent.emit('startWatch', space, FILE_OPERATION.DECOMPRESS, dstPath)
+    // do
+    try {
+      if (extension === '.zip') {
+        await extractZip(space.realPath, dstPath)
+      } else {
+        await extractTar({
+          file: space.realPath,
+          cwd: dstPath,
+          gzip: COMPRESSION_EXTENSION.get(extension) === tarGzExtension,
+          preserveOwner: false
+        })
+      }
+    } finally {
+      await this.filesLockManager.removeLock(fileLock.key)
+    }
+  }
+
+  async generateThumbnail(space: SpaceEnv, size: number): Promise<PNGStream> {
+    if (!(await isPathExists(space.realPath))) {
+      throw new FileError(HttpStatus.NOT_FOUND, 'Location not found')
+    }
+    if (getMimeType(space.realPath, false).indexOf('image') === -1) {
+      throw new FileError(HttpStatus.BAD_REQUEST, 'File is not an image')
+    }
+    try {
+      return generateThumbnail(space.realPath, size)
+    } catch (e) {
+      this.logger.warn(e)
+      throw new FileError(HttpStatus.BAD_REQUEST, 'File is not an image')
+    }
+  }
+}

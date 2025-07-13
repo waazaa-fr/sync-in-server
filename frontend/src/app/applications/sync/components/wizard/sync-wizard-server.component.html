@@ -1,0 +1,99 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="wizard">
+  <div class="my-2">
+    <div class="d-flex align-items-center justify-content-center fs-sm" style="min-height: 40px">
+      @if (selectedPath) {
+        @if (selectedPath.icon) {
+          <fa-icon [icon]="selectedPath.icon" class="circle-{{selectedPath.iconClass}}-icon" style="width: 32px; height: 32px; font-size: 16px"></fa-icon>
+        } @else {
+          <img [src]="selectedPath.mimeUrl" alt="" height="30">
+        }
+        <span class="text-truncate fw-500 ms-2">{{ selectedPath.name }}</span>
+      } @else {
+        <span l10nTranslate>Please select the server directory to sync, if it doesn't exist you can create it.</span>
+      }
+    </div>
+    <div class="app-top-menu px-0 bg-transparent">
+      <button (click)="onBack()"
+              [disabled]="!currentPath"
+              [tooltip]="'Back' | translate:locale.language"
+              class="btn btn-sm btn-secondary"
+              type="button">
+        <fa-icon [icon]="icons.faArrowCircleLeft"></fa-icon>
+      </button>
+      <div class="text-warning mx-auto fs-sm">
+        @if (infoMsg) {
+          <span l10nTranslate>{{ infoMsg }}</span>
+        }
+      </div>
+      <form class="row align-items-center">
+        <div class="input-group">
+          <button (click)="addDirectory()"
+                  [hidden]="!canCreateDir"
+                  [disabled]="!newDirectoryName"
+                  [tooltip]="'Add' | translate:locale.language"
+                  class="btn btn-sm btn-secondary input-group-text"
+                  type="button">
+            <fa-icon [icon]="icons.faFolderPlus"></fa-icon>
+          </button>
+          <input (keyup.enter)="addDirectory()"
+                 [(ngModel)]="newDirectoryName"
+                 [hidden]="!canCreateDir"
+                 [ngModelOptions]="{standalone: true}"
+                 class="form-control form-control-sm me-1"
+                 [placeholder]="'New folder' | translate:locale.language" type="text">
+        </div>
+      </form>
+    </div>
+    <table class="app-table wizard-nav-header">
+      <thead>
+      <tr>
+        @if (currentPath) {
+          <th class="text-truncate">{{ currentShowedPath }}</th>
+        } @else {
+          <th l10nTranslate>Double click to browse directories</th>
+        }
+      </tr>
+      </thead>
+    </table>
+    <div [resizeOffset]="230" appAutoResize [useMaxHeight]="false" class="wizard-nav-content">
+      <table class="app-table">
+        <tbody tabindex="-1">
+          @for (p of currentPaths(); track p.id) {
+            <tr (click)="onSelect(p)"
+                (dblclick)="browse(p.path)"
+                [class.selected]="p.selected">
+              <td>
+                <div class="d-flex align-items-center">
+                  @if (p.icon) {
+                    <fa-icon [icon]="p.icon" class="circle-{{p.iconClass}}-icon" style="width: 32px; height: 32px; font-size: 16px"></fa-icon>
+                  } @else {
+                    <img [src]="p.mimeUrl" alt="" height="30">
+                  }
+                  <span class="ms-1">{{ p.name }}</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="mt-auto">
+    <div class="d-flex align-items-start">
+      <button (click)="onPrevious()" class="btn btn-secondary me-auto" type="button" l10nTranslate>
+        <fa-icon [icon]="icons.faArrowCircleLeft"></fa-icon>
+        Previous
+      </button>
+      <button (click)="onNext()" [disabled]="!selectedPath" class="btn btn-secondary ms-auto" type="button" l10nTranslate>
+        <fa-icon [icon]="icons.faArrowCircleRight"></fa-icon>
+        Next
+      </button>
+    </div>
+  </div>
+</div>

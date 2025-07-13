@@ -1,0 +1,27 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="sidebar-component-title">
+  @if (windows.length) {
+    <button (click)="onCloseAll()" class="btn btn-sm btn-secondary">
+      <fa-icon [icon]="icons.faXmark"></fa-icon>
+    </button>
+  }
+  <span l10nTranslate>Windows Manager</span>
+</div>
+<div class="sidebar-item" appAutoResize>
+  @for (modal of windows; track modal.id) {
+    <div class="sidebar-item-container" (click)="onMaximize(modal)">
+      <div class="sidebar-item-content">
+        <img [ngSrc]="modal.element.mimeUrl" alt="" width="28" height="28">
+        <div class="text-truncate fs-xxs ms-2">{{ modal.element.name }}</div>
+        <button (click)="onClose($event, modal)" class="btn btn-xs btn-danger ms-auto">
+          <fa-icon [icon]="icons.faTimes"></fa-icon>
+        </button>
+      </div>
+    </div>
+  }
+</div>

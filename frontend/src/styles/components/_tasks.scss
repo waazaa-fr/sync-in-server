@@ -1,0 +1,33 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.task-list {
+  @extend .no-select-pointer;
+  border-bottom: .5px solid transparent;
+  font-size: $font-size-xxs;
+
+  &:hover {
+    background-color: transparent;
+  }
+
+  > div {
+    height: $sidebar-apps-height;
+  }
+}
+
+.custom-progress-bar {
+  background-color: black;
+  font-size: $font-size-xxs;
+
+  &.progress {
+    height: 18px !important;
+  }
+
+  .progress-bar {
+    height: 18px !important;
+  }
+
+}

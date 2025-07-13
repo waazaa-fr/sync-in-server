@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div (keyup)="mainClick($event)" [offClick]="clickedOutside" class="ui-select-container dropdown open">
+  <div [class.ui-disabled]="disabled"></div>
+  @if (inputMode) {
+    <input (keydown)="inputEvent($event)"
+           (keyup)="inputEvent($event, true)"
+           [disabled]="disabled"
+           autocomplete="false"
+           class="form-control form-control-sm ui-select-search"
+           tabindex="-1"
+           type="text">
+  } @else {
+    <div class="ui-select-match form-control form-control-sm">
+      <span (click)="matchClick($event)" class="ui-select-toggle no-select" style="outline: 0" tabindex="-1">
+        @if (active) {
+          <span [class.ui-select-allow-clear]="allowClear && active" class="ui-select-match-text w-100">
+            <ng-container *ngTemplateOutlet="customTemplateSelect || DefaultSelect; context: {active: active}"></ng-container>
+          </span>
+        } @else {
+          <span class="ui-select-placeholder">{{ placeholder }}</span>
+        }
+        @if (allowClear && active) {
+          <button (click)="removeClick(active, $event)" aria-label="close" type="button" class="btn-close"></button>
+        }
+        <i class="dropdown-toggle"></i>
+      </span>
+    </div>
+  }
+  @if (optionsOpened && options && options.length > 0) {
+    <!-- options template -->
+    <ul class="ui-select-choices dropdown-menu" role="menu">
+      @for (o of options; track $index) {
+        <li role="menuitem">
+          <div (click)="selectMatch(o, $event)"
+               (mouseenter)="selectActive(o)"
+               [class.active]="isActive(o)"
+               class="ui-select-choices-row">
+            <ng-container *ngTemplateOutlet="customTemplateOptions || DefaultOptions; context: {o: o, i: inputValue}"></ng-container>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<!--Templates-->
+<ng-template #DefaultSelect let-active="active">
+  <div class="d-flex align-items-center">
+    <span class="ui-icon circle-primary-icon me-2">
+      <fa-icon [icon]="itemIcon" [fixedWidth]="false"></fa-icon>
+    </span>
+    <span>{{ active.name }}</span>
+    <div class="d-flex ms-auto me-4 fs-xxxs text-muted">{{ active.description }}</div>
+  </div>
+</ng-template>
+<ng-template #DefaultOptions let-i="i" let-o="o">
+  <a class="dropdown-item cursor-pointer" href="javascript:void(0)" style="padding: 3px 5px">
+    <div class="d-flex align-items-center">
+      <span class="ui-icon circle-primary-icon me-2">
+        <fa-icon [icon]="itemIcon" [fixedWidth]="false"></fa-icon>
+      </span>
+      <span [innerHtml]="sanitize(o.name | highlight:i)"></span>
+      <span class="d-flex ms-auto fs-xxxs text-muted" [innerHtml]="sanitize(o.description | highlight:i)"></span>
+    </div>
+  </a>
+</ng-template>
+<!--End Templates-->

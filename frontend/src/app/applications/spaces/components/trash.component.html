@@ -1,0 +1,167 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<!--Start Top Menu-->
+<div class="app-top-menu">
+  <button (click)="loadTrashBins()"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="'Refresh' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faArrowRotateRight" [animation]="loading ? 'spin' : null"></fa-icon>
+  </button>
+  <div class="ms-auto">
+    <!--Start Filter Button-->
+    <div class="btn-group btn-group-sm me-1">
+      <app-input-filter class="d-none d-sm-block"></app-input-filter>
+    </div>
+    <!--End Filter Button-->
+    <!--Start View Button-->
+    <app-navigation-view [sortParams]="sortTable.sortParam"
+                         [sortFields]="btnSortFields"
+                         (sortBy)="sortBy($event)"
+                         (switchView)="galleryMode = $event">
+    </app-navigation-view>
+    <!--End View Button-->
+  </div>
+</div>
+<!--End Top Menu-->
+@if (galleryMode?.enabled) {
+  <!--Start Gallery Content-->
+  <div class="app-thumbs">
+    <app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                        [childHeight]="galleryMode.dimensions"
+                        [childWidth]="galleryMode.dimensions"
+                        [items]="trashBins | searchFilter:inputFilter.search()"
+                        [galleryMode]="true"
+                        [resizeOffset]="110">
+      <div class="row g-0" tabindex="-1">
+        @for (t of scrollView?.viewPortItems; track t.id) {
+          <div (click)="onSelect(t)"
+               (contextmenu)="onTargetContextMenu($event, t)"
+               (pressup)="onTargetContextMenu($event, t)"
+               (tap)="browse(t)"
+               [class.selected]="t.id === selected?.id"
+               [style.height.px]="galleryMode.dimensions"
+               [style.width.px]="galleryMode.dimensions"
+               class="card">
+            <div [attr.rowIndex]="$index" class="card-body">
+              <fa-icon [icon]="t.isPersonal ? icons.PERSONAL : icons.SPACES"
+                       class="circle-primary-icon"
+                       [style.min-width.px]="galleryMode.image"
+                       [style.min-height.px]="galleryMode.image"
+                       [style.font-size.px]="galleryMode.faSize">
+              </fa-icon>
+              <span class="label-top-right">
+                @if (t.newly) {
+                  <span [style.font-size.px]="galleryMode.textSize" class="badge rounded-pill bg-warning" l10nTranslate>{{ t.hTimeAgo }}</span>
+                }
+              </span>
+              <span class="label-bottom-right">
+                <span [style.font-size.px]="galleryMode.textSize" class="badge rounded-pill bg-danger">{{ t.nb }}</span>
+              </span>
+            </div>
+            <div class="card-footer text-center text-truncate p-1">
+              <span [style.font-size.px]="galleryMode.textSize" class="no-pointer-events" draggable="false">
+                @if (t.isPersonal) {
+                  {{ t.name | translate:locale.language }}
+                } @else {
+                  {{ t.name }}
+                }
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </app-virtual-scroll>
+  </div>
+  <!--End Gallery Content-->
+} @else {
+  <!--Start Table Files Content-->
+  <table class="app-table">
+    <thead>
+    <tr>
+      @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+        @if (th.value.show) {
+          <th (click)="sortBy(th.key)"
+              [style.width.%]="th.value.width"
+              [class.text-align-center]="th.value.textCenter"
+              [class.cursor-pointer]="th.value.sortable"
+              class="{{th.value.class}}"
+              l10nTranslate>
+            {{ th.value.label }}
+            @if (sortTable.sortParam.column === th.key) {
+              <fa-icon [icon]="sortTable.sortParam.asc ? icons.faArrowDown : icons.faArrowUp" [fixedWidth]="false"></fa-icon>
+            }
+          </th>
+        }
+      }
+    </tr>
+    </thead>
+  </table>
+  <app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                      [bufferAmount]="5"
+                      [items]="trashBins | searchFilter:inputFilter.search()">
+    <table class="app-table">
+      <tbody tabindex="-1">
+        @for (t of scrollView?.viewPortItems; track t.id) {
+          <tr (click)="onSelect(t)"
+              (contextmenu)="onTargetContextMenu($event, t)"
+              (pressup)="onTargetContextMenu($event, t)"
+              (tap)="browse(t)"
+              [class.selected]="t.id === selected?.id">
+            @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+              @if (th.value.show) {
+                <td [style.width.%]="th.value.width"
+                    [class.text-align-center]="th.value.textCenter"
+                    class="{{th.value.class}} {{th.value.newly ? 'prop-newly-' + t[th.value.newly] : ''}}">
+                  @switch (th.key) {
+                    @case ('name') {
+                      <div class="d-flex align-items-center">
+                        <fa-icon [icon]="t.isPersonal ? icons.PERSONAL : icons.SPACES" class="circle-primary-icon"></fa-icon>
+                        <span class="no-pointer-events" draggable="false">
+                          @if (t.isPersonal) {
+                            {{ t.name | translate:locale.language }}
+                          } @else {
+                            {{ t.name }}
+                          }
+                        </span>
+                      </div>
+                    }
+                    @case ('nb') {
+                      <span class="badge rounded-pill bg-danger">{{ t.nb }}</span>
+                    }
+                    @case ('modified') {
+                      {{ t.hTimeAgo }}
+                    }
+                  }
+                </td>
+              }
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-virtual-scroll>
+  <!--End Table Files Content-->
+}
+<!--Start Context Menu -->
+<context-menu #MainContextMenu>
+  <ng-template (execute)="loadTrashBins()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faArrowRotateRight"></fa-icon>Refresh</span>
+  </ng-template>
+</context-menu>
+<context-menu #TargetContextMenu>
+  <ng-template (execute)="layout.showRSideBarTab(TAB_MENU.SELECTION)" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faCircleInfo"></fa-icon>Informations</span>
+  </ng-template>
+</context-menu>
+<!--End Context Menu-->
+<!--Start Foot Content-->
+<div class="app-foot-menu">
+  <span class="mx-auto">{{ trashBins.length }} {{ 'trash bins' | translate:locale.language }}</span>
+</div>
+<!--End Foot Content-->

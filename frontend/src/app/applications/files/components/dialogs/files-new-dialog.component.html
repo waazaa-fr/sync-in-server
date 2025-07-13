@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header">
+  <h4 class="modal-title">
+    @switch (inputType) {
+      @case ('download') {
+        <fa-icon [icon]="icons.faGlobe"></fa-icon>
+      }
+      @case ('directory') {
+        <fa-icon [icon]="icons.faFolderClosed"></fa-icon>
+      }
+      @case ('file') {
+        <fa-icon [icon]="icons.faFileAlt"></fa-icon>
+      }
+    }
+    <span class="ms-1" l10nTranslate>{{ fileProp.title }}</span>
+  </h4>
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white" type="button"></button>
+</div>
+<div class="modal-body">
+  @if (inputType === 'file') {
+    <div class="btn-group btn-group-sm mb-3" dropdown>
+      <button aria-controls="dropdown-animated" class="btn btn-primary dropdown-toggle" dropdownToggle id="button-animated" type="button">
+        <span l10nTranslate>{{ selectedDocType }}</span>
+        <fa-icon [icon]="icons.faCaretDown" class="ms-3"></fa-icon>
+      </button>
+      <ul *dropdownMenu aria-labelledby="button-animated" class="dropdown-menu" id="dropdown-animated" role="menu">
+        @for (item of docTypes | keyvalue: originalOrderKeyValue; track item.key) {
+          <li role="menuitem"><a (click)="onSelectDocType(item.key)" class="dropdown-item" l10nTranslate>{{ item.key }}</a></li>
+        }
+      </ul>
+    </div>
+  }
+  @if (inputType === 'download') {
+    <div class="input-group input-group-sm my-2">
+      <span class="input-group-text">
+        <fa-icon [icon]="icons.faGlobe"></fa-icon>
+      </span>
+      <input [(ngModel)]="downloadProp.url"
+             (keydown.control.v)="pasteUrl()"
+             (keydown.meta.v)="pasteUrl()"
+             [placeholder]="downloadProp.placeholder|translate:locale.language"
+             class="form-control fs-xs"
+             type="text"
+             appAutofocus>
+    </div>
+  }
+  <div class="input-group input-group-sm my-2">
+       <span class="input-group-text">
+         @if (inputType === 'directory') {
+           <fa-icon [icon]="icons.faFolderClosed"></fa-icon>
+         } @else {
+           <fa-icon [icon]="icons.faFileAlt"></fa-icon>
+         }
+         </span>
+    <input #InputText
+           [(ngModel)]="fileProp.name"
+           [placeholder]="fileProp.placeholder|translate:locale.language"
+           class="form-control fs-xs"
+           type="text"
+           appAutofocus>
+  </div>
+</div>
+<div class="modal-footer">
+  @if (error) {
+    <span class="me-auto fs-xs text-danger" l10nTranslate>{{ error }}</span>
+  }
+  <button (click)="layout.closeDialog()" class="btn btn-sm btn-secondary" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()"
+          [disabled]="!fileProp.name || inputType === 'download' && !downloadProp.url || submitted"
+          class="btn btn-sm btn-primary"
+          type="button"
+          l10nTranslate>Confirm
+  </button>
+</div>

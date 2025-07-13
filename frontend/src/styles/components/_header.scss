@@ -1,0 +1,151 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.main-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  margin-left: $sidebar-apps-icons-width + $sidebar-apps-menus-width;
+  max-height: $navbar-height;
+  z-index: $sidebar-z-index;
+  transform: translate3d(0, 0, 0);
+  transition: margin-left $transition-speed $transition-fn;
+
+  .navbar {
+    margin-bottom: 0;
+    margin-left: 0;
+    max-height: $navbar-height;
+    border: none;
+    @include border-radius(0);
+    padding: 0;
+    background-color: $primary;
+  }
+
+  .navbar-content {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+
+    > a {
+      padding: $nav-link-padding;
+      width: $sidebar-apps-icons-width;
+      justify-content: center;
+    }
+
+    .navbar-breadcrumb {
+      max-width: 93%;
+      @include media-breakpoint-down(sm) {
+        display: none;
+      }
+    }
+
+    .navbar-right-side {
+      display: flex;
+      margin-left: auto;
+
+      .menu {
+        display: flex;
+        justify-content: center;
+        width: $sidebar-apps-icons-width;
+        cursor: pointer;
+        padding: 6px;
+
+        &:hover {
+          background-color: $sidebar-light-icons-menu-hover-bg;
+        }
+
+        .avatar-img {
+          width: 30px;
+          height: 30px;
+        }
+      }
+    }
+  }
+
+
+  //Navbar toggle button
+  .navbar-button {
+    display: flex;
+    align-items: center;
+    background: transparent none;
+    height: $navbar-height;
+    color: $white;
+
+    &:hover {
+      background-color: darken($primary, 5%);
+    }
+
+    &:focus,
+    &:active {
+      background: transparent;
+    }
+  }
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: flex-start;
+  height: $navbar-height;
+  background: transparent;
+  font-size: $font-size-xs;
+  padding: 10px 8px;
+  margin: 0;
+  color: $sidebar-light-icons-menu-color;
+
+  .breadcrumb-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @extend .text-truncate;
+    @extend .no-select-pointer;
+
+    > li {
+      &:not(:first-child) {
+        @extend .text-truncate;
+      }
+
+      display: inline;
+      list-style: none;
+
+      &.active {
+        > a {
+          color: $gray-lightest !important;
+        }
+      }
+
+      &:first-child {
+        overflow: visible;
+
+        > a {
+          color: $gray-lightest !important;
+        }
+      }
+
+      > a {
+        color: darken($gray-light, 10%);
+        text-decoration: none;
+        margin-left: .3rem;
+
+        &:hover {
+          color: $gray-lightest;
+        }
+
+        > fa-icon {
+          font-size: $font-size-xl;
+        }
+      }
+    }
+
+    > fa-icon {
+      color: $sidebar-light-apps-menu-title-color;
+      margin-left: .3rem;
+    }
+  }
+}

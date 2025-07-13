@@ -1,0 +1,71 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-weight: 400;
+}
+
+mark, .mark {
+  padding: 0 3px;
+}
+
+.no-pointer-events {
+  pointer-events: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.no-select {
+  cursor: default;
+  user-select: none;
+}
+
+.no-select-pointer {
+  @extend .no-select;
+  cursor: pointer;
+}
+
+.overflow-wrap-and-whitespace {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+.is-invalid {
+  border-color: $danger !important;
+}
+
+.tooltip {
+  font-size: $font-size-xxs;
+}
+
+.table-disable-hover,
+.table-disable-hover * {
+  pointer-events: none !important;
+}
+
+.tab-dialog {
+  > a {
+    padding: .35rem !important;
+  }
+}
+
+label {
+  @extend .no-select;
+  font-weight: 500;
+}

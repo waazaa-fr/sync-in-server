@@ -1,0 +1,607 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+//Dark Sidebar Mixin
+
+@mixin skin-dark-left-sidebar() {
+  // Sidebar background color (Both .wrapper is responsible for sidebar bg color)
+  .wrapper, .left-sidebar {
+    background-color: $sidebar-dark-apps-menu-bg;
+  }
+  .left-sidebar {
+    // Side bar Menu apps
+    .sidebar-apps-icons {
+      background-color: $sidebar-dark-icons-menu-bg;
+
+      .menu > a {
+        color: $sidebar-dark-icons-menu-color;
+
+        &:not(:first-child) {
+          border-bottom: .5px solid $sidebar-dark-icons-menu-bg;
+
+          &:hover, &.active {
+            color: $sidebar-dark-icons-menu-hover-color;
+            background: $sidebar-dark-icons-menu-hover-bg;
+            border-right: .5px solid $sidebar-dark-icons-menu-bg;
+          }
+        }
+      }
+
+      .menu-mini {
+        background-color: $sidebar-dark-mini-menu-bg;
+
+        > a {
+          color: $sidebar-dark-mini-menu-color;
+          border-bottom: .5px solid $sidebar-dark-mini-menu-bg !important;
+
+          &:hover, &.active {
+            background: darken($sidebar-dark-mini-menu-bg, 5%) !important;
+            color: $sidebar-dark-mini-menu-hover-color;
+
+            > fa-icon:first-child {
+              color: $primary;
+            }
+          }
+        }
+      }
+
+      .chat-item-sidebar {
+        color: $sidebar-dark-apps-menu-border-color;
+        border-bottom: .5px solid $sidebar-dark-mini-menu-bg;
+
+        &:hover, &.active {
+          background-color: darken($sidebar-dark-mini-menu-bg, 5%);
+        }
+      }
+
+    }
+
+    .sidebar-apps-menus {
+      .menu {
+        border-bottom: .5px solid $sidebar-dark-apps-menu-bg;
+
+        > a {
+          color: $sidebar-dark-apps-menu-border-color;
+        }
+
+        //&.submenu {
+        //  background-color: darken($sidebar-dark-apps-menu-bg, 3%);
+        //}
+
+        &:hover, &.active {
+          background: $sidebar-dark-apps-menu-hover-bg;
+
+          > a {
+            color: $sidebar-dark-apps-menu-hover-color;
+
+            > fa-icon:first-child {
+              color: $primary;
+            }
+          }
+        }
+      }
+
+      .sidebar-apps-footer {
+        color: $secondary;
+      }
+    }
+  }
+}
+
+@mixin skin-dark-right-sidebar() {
+  .control-sidebar-theme-dark {
+    background: $sidebar-dark-apps-menu-bg;
+    border-left: .5px solid $sidebar-dark-icons-menu-border-color;
+
+    .sidebar-component-title {
+      color: $sidebar-dark-apps-menu-color;
+      background: $sidebar-dark-apps-menu-title-bg;
+      border-bottom: .5px solid $sidebar-dark-icons-menu-border-color;
+    }
+
+    .sidebar-component-content {
+      color: $gray-light;
+    }
+
+    .sidebar-title {
+      color: $sidebar-dark-apps-menu-color;
+      background: $sidebar-dark-apps-menu-title-bg;
+      border-bottom: .5px solid $sidebar-dark-icons-menu-border-color;
+    }
+
+    hr {
+      border-top-color: $sidebar-dark-icons-menu-hover-bg;
+      opacity: 1;
+    }
+  }
+
+  .control-sidebar-menu {
+    .sidebar-apps-icons {
+      background-color: $sidebar-dark-icons-menu-bg;
+      border-left: .5px solid $sidebar-dark-icons-menu-border-color;
+
+      .menu {
+        > a {
+          color: $sidebar-dark-icons-menu-color;
+          border-bottom: .5px solid $sidebar-dark-icons-menu-bg;
+
+          &:hover, &.active {
+            color: $gray-lightest;
+            background: $sidebar-dark-icons-menu-hover-bg;
+          }
+        }
+      }
+    }
+  }
+}
+
+@mixin skin-dark-chat() {
+  .chat-border-bottom {
+    border-bottom-color: $sidebar-dark-apps-menu-bg;
+  }
+
+  .chat-input {
+    background-color: $sidebar-dark-icons-menu-bg;
+  }
+
+  .chat-container {
+    background-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+  }
+
+  .chat-button-bottom {
+    color: $gray-light;
+
+    &:hover {
+      color: lighten($gray-light, 30%);
+    }
+  }
+
+  .chat-list-sidebar {
+    color: $sidebar-dark-apps-menu-border-color;
+
+    .chat-item-sidebar {
+      border-bottom: .5px solid $sidebar-dark-apps-menu-bg;
+
+      &:hover, &.active {
+        color: $sidebar-dark-apps-menu-hover-color;
+        background-color: $sidebar-dark-apps-menu-hover-bg;
+      }
+    }
+  }
+}
+
+@mixin skin-dark-tree() {
+  .angular-tree-component {
+    .node-wrapper {
+      &:hover,
+      &:focus,
+      &:active {
+        background-color: $sidebar-dark-apps-menu-title-bg;
+      }
+
+      &.tree-selected {
+        background-color: darken($sidebar-dark-apps-menu-title-bg, 4%);
+      }
+    }
+
+    .node-content-wrapper {
+      &:hover,
+      &:focus,
+      &:active {
+        background-color: $sidebar-dark-apps-menu-title-bg;
+      }
+
+      &.node-content-wrapper-active {
+        background-color: darken($sidebar-dark-apps-menu-title-bg, 4%);
+
+        &:hover {
+          background-color: darken($sidebar-dark-apps-menu-title-bg, 4%);
+        }
+      }
+    }
+  }
+}
+
+@mixin skin-dark-app() {
+  .newly {
+    color: $custom-color !important;
+    border-bottom: none;
+  }
+
+  .app-table {
+    color: $gray-light;
+    // Bootstrap 5 fix
+    > :not(:first-child) {
+      border-top: 1px solid $sidebar-dark-icons-menu-border-color;
+    }
+
+    thead {
+      background-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+
+      tr {
+        th {
+          border-right-color: $sidebar-dark-icons-menu-border-color;
+          border-bottom-color: $sidebar-dark-icons-menu-border-color;
+        }
+      }
+    }
+
+    tbody tr {
+      border-bottom-color: darken($sidebar-dark-icons-menu-border-color, 3%) !important;
+
+      &:hover {
+        background-color: $sidebar-dark-icons-menu-bg !important;
+      }
+
+      &.selected {
+        background-color: $sidebar-dark-apps-menu-title-bg !important;
+      }
+    }
+
+    tbody td:not(:first-child) {
+      color: darken($gray-light, 5%);
+    }
+  }
+
+  .app-table-striped {
+    > tbody > tr {
+      &:nth-of-type(odd) {
+        background-color: $sidebar-dark-icons-menu-border-color;
+      }
+
+      &:hover {
+        background-color: $sidebar-dark-apps-menu-title-bg;
+      }
+    }
+  }
+
+  .app-top-menu {
+    border-top-color: $sidebar-dark-icons-menu-border-color;
+    border-bottom-color: $sidebar-dark-icons-menu-border-color;
+    background-color: $sidebar-dark-apps-menu-title-bg;
+
+    .dropdown-menu {
+      background-color: $sidebar-dark-icons-menu-border-color;
+      border-color: darken($sidebar-dark-icons-menu-border-color, 5%);
+
+      .dropdown-item {
+        color: $gray-mid;
+
+        &:hover, &.active {
+          background-color: $sidebar-dark-icons-menu-hover-bg;
+        }
+      }
+    }
+  }
+
+  .app-foot-menu {
+    background-color: $sidebar-dark-icons-menu-bg;
+    color: darken($gray-light, 5%);
+  }
+
+  .app-div-hovered {
+    &:hover {
+      background-color: darken($sidebar-dark-apps-menu-bg, 4%) !important;
+    }
+
+    &.selected {
+      background-color: $sidebar-dark-apps-menu-title-bg !important;
+    }
+  }
+
+  .app-div-striped {
+    &.selected {
+      background-color: $sidebar-dark-apps-menu-title-bg !important;
+    }
+
+    &:nth-of-type(even) {
+      background-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+    }
+  }
+
+  .app-div-striped-inverse {
+    &:nth-of-type(odd) {
+      background-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+    }
+  }
+
+  .app-thumbs {
+    background-color: inherit !important;
+
+    .row {
+      .card {
+        background-color: $sidebar-dark-icons-menu-bg;
+        border-color: $sidebar-dark-icons-menu-border-color;
+
+        &.selected {
+          background-color: $sidebar-dark-apps-menu-title-bg;
+
+          .card-footer {
+            background-color: $sidebar-dark-apps-menu-title-bg;
+          }
+        }
+      }
+
+      .card-footer {
+        color: $gray-light;
+        background-color: $sidebar-dark-icons-menu-bg;
+        border-top: .5px solid $sidebar-dark-icons-menu-border-color;
+      }
+    }
+  }
+
+  .app-sync-clients {
+    .left-panel {
+      border-right-color: darken($sidebar-dark-icons-menu-border-color, 4%) !important;
+      border-bottom-color: darken($sidebar-dark-icons-menu-border-color, 4%) !important;
+    }
+
+    .right-panel {
+      border-bottom-color: darken($sidebar-dark-icons-menu-border-color, 4%) !important;
+    }
+  }
+
+  .profile-page {
+    .list-group-item {
+      background-color: lighten($sidebar-dark-apps-menu-title-bg, 8%);
+      color: $white;
+    }
+
+    select {
+      background-color: transparent;
+      color: $white;
+      filter: brightness(0) invert(1);
+    }
+  }
+
+  .task-list {
+    border-bottom-color: $sidebar-dark-icons-menu-border-color;
+
+    &:hover {
+      background-color: $sidebar-dark-apps-menu-title-bg;
+    }
+  }
+
+  .app-small-card {
+    background-color: lighten($sidebar-dark-apps-menu-title-bg, 2%);
+  }
+
+  .wizard {
+    tbody tr {
+      &:hover {
+        background-color: lighten($sidebar-dark-apps-menu-title-bg, 1%) !important;
+      }
+
+      &.selected {
+        background-color: darken($sidebar-dark-apps-menu-title-bg, 5%);
+      }
+    }
+
+    .wizard-nav-content {
+      background-color: $sidebar-dark-icons-menu-bg;
+    }
+  }
+
+  .sidebar-item {
+    .sidebar-item-container {
+      &:hover {
+        background-color: $sidebar-dark-apps-menu-title-bg;
+      }
+
+      .sidebar-item-content {
+        border-bottom-color: $sidebar-dark-icons-menu-border-color;
+      }
+    }
+  }
+}
+
+@mixin skin-dark-miscellaneous() {
+  .content-wrapper {
+    background-color: lighten($sidebar-dark-apps-menu-bg, 4%);
+    color: $gray-light;
+  }
+
+  .content-container {
+    border-left: .5px solid $sidebar-dark-icons-menu-border-color;
+  }
+
+  .ngx-contextmenu {
+    background-color: $sidebar-dark-icons-menu-border-color !important;
+    border-color: darken($sidebar-dark-icons-menu-border-color, 5%) !important;
+
+    .ngx-context-menu-item {
+      color: $gray-mid !important;
+
+      &:hover, &.active {
+        background-color: $sidebar-dark-icons-menu-hover-bg !important;
+      }
+    }
+  }
+
+  .dropdown-divider {
+    border-top-color: #515f67 !important;
+  }
+
+  .modal-content {
+    background: transparent !important;
+  }
+
+  .modal-header {
+    border-bottom-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+  }
+
+  .modal-body {
+    color: $gray-light;
+    background-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+
+    .app-top-menu {
+      background: transparent;
+    }
+  }
+
+  .modal-footer {
+    color: $gray-light;
+    background-color: $sidebar-dark-apps-menu-title-bg;
+    border-top-color: $sidebar-dark-apps-menu-title-bg;
+  }
+
+  typeahead-container, .ui-select-choices {
+    &.dropdown-menu {
+      background-color: $sidebar-dark-icons-menu-border-color;
+      border-color: $sidebar-dark-apps-menu-title-bg;
+
+      > li > a {
+        color: $gray-light;
+
+        &:hover {
+          background-color: darken($sidebar-dark-apps-menu-bg, 4%);
+        }
+      }
+    }
+
+    .dropdown-item {
+      color: $gray-light !important;
+
+      &:hover, &.active {
+        background-color: darken($sidebar-dark-apps-menu-bg, 4%);
+      }
+    }
+  }
+
+  .btn-custom {
+    &:hover:not(.active) {
+      color: $body-color !important;
+    }
+  }
+
+  .nav-link {
+    color: $gray-light;
+    background: lighten($sidebar-dark-icons-menu-bg, 4%);
+
+    &:hover {
+      color: $white;
+      background: lighten($sidebar-dark-icons-menu-bg, 8%);
+    }
+
+    &.active {
+      color: $white;
+      background: $primary;
+    }
+
+    &:not(.active).disabled {
+      color: $muted;
+    }
+  }
+
+  .form-control-plaintext {
+    color: $white;
+  }
+
+  .form-control, .form-select, .input-group-text {
+    background-color: $sidebar-dark-apps-menu-title-bg;
+    color: $white;
+    border-color: lighten($sidebar-dark-icons-menu-bg, 4%);
+
+    &:focus {
+      border-color: $primary;
+    }
+
+    &:disabled {
+      color: $muted;
+      background-color: lighten($sidebar-dark-apps-menu-title-bg, 4%);
+    }
+
+  }
+
+  .small-box {
+    color: $gray-light;
+    border-color: lighten($sidebar-dark-icons-menu-bg, 4%);
+    background-color: $sidebar-dark-icons-menu-bg;
+  }
+
+  .box:not(.box-background-transparent) {
+    background-color: $sidebar-dark-icons-menu-bg;
+  }
+
+  .box-default {
+    @include box-solid-variant($sidebar-dark-apps-menu-title-bg, $gray-light, true);
+
+    > .box-header {
+      border-bottom: .5px solid $sidebar-dark-apps-menu-title-bg;
+    }
+
+    > .box-footer {
+      border-top: .5px solid $sidebar-dark-apps-menu-title-bg;
+    }
+  }
+
+  .box-footer-default {
+    background-color: $sidebar-dark-apps-menu-title-bg;
+
+    &:hover {
+      background-color: darken($sidebar-dark-apps-menu-title-bg, 5%);
+    }
+  }
+
+  .box-transparent {
+    > .box-header {
+      border-bottom-color: $gray;
+    }
+  }
+
+  .products-list > li:hover {
+    background-color: lighten($sidebar-dark-apps-menu-title-bg, 1%);
+  }
+
+  .product-list-in-box {
+    border-bottom-color: $sidebar-dark-icons-menu-border-color;
+  }
+
+
+  .ui-disabled {
+    background-color: $sidebar-dark-icons-menu-bg !important;
+    color: $body-color;
+  }
+
+  .ui-select-toggle {
+    ::after {
+      color: $gray-light;
+    }
+  }
+
+  .text-purple {
+    color: #b366ff !important;
+  }
+
+  .text-primary {
+    color: #2283dd !important;
+  }
+
+  .bg-theme {
+    background-color: darken($sidebar-dark-icons-menu-bg, 4%);
+  }
+
+  .bg-theme-alt {
+    background-color: $sidebar-dark-apps-menu-title-bg !important;
+  }
+
+  .btn-close {
+    filter: var(--bs-btn-close-white-filter)
+  }
+
+  .btn-outline-secondary-alt {
+    border-color: lighten($sidebar-dark-icons-menu-bg, 4%)
+  }
+
+  .text-bg-light {
+    color: $gray-light !important;
+    background-color: lighten($sidebar-dark-apps-menu-title-bg, 8%) !important;
+  }
+
+  .avatar-img {
+    background-color: darken($gray-light, 5%);
+  }
+}

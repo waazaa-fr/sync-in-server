@@ -1,0 +1,44 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header align-items-center">
+  <h4 class="modal-title">
+    <fa-icon [icon]="icons.faFolderClosed" class="me-2"></fa-icon>
+    <span l10nTranslate>Add an external location</span>
+  </h4>
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white" type="button"></button>
+</div>
+<div class="modal-body form-validation">
+  @if (withRootName) {
+    <input class="form-control form-control-sm my-2"
+           appAutofocus
+           [ngModel]="newSpaceRoot.name"
+           (ngModelChange)="checkInput($event, true)"
+           [class.is-invalid]="!rootNameIsValid"
+           [placeholder]="'Name' | translate:locale.language"
+           type="text"
+           required>
+  }
+  <input class="form-control form-control-sm my-4"
+         appAutofocus
+         [autoFocus]="!withRootName"
+         [ngModel]="newSpaceRoot.externalPath"
+         (ngModelChange)="checkInput($event)"
+         [class.is-invalid]="!rootPathIsValid"
+         placeholder="{{'Location' | translate:locale.language}}: /home/sync-in/data"
+         type="text"
+         required>
+</div>
+<div class="modal-footer">
+  @if (error) {
+    <span class="me-auto fs-sm text-danger text-truncate" l10nTranslate>{{ error }}</span>
+  }
+  @if (rootIsValid) {
+    <button (click)="onSubmit()" class="btn btn-sm btn-primary" type="button" l10nTranslate>Confirm</button>
+  } @else {
+    <button (click)="onValidRoot()" class="btn btn-sm btn-success" type="button" l10nTranslate>Check the location</button>
+  }
+</div>

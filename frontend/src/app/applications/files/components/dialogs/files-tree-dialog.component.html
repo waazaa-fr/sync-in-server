@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header">
+  <h4 class="modal-title">
+    @if (!!selection) {
+      <span>
+        <fa-icon [icon]="selection.isDir ? icons.faFolderClosed : icons.faFile"></fa-icon>
+        {{ selection.path | pathSlice:-1 }}
+    </span>
+    } @else {
+      <span l10nTranslate>Select a file</span>
+    }
+  </h4>
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white" type="button"></button>
+</div>
+<div class="modal-body py-2 px-0">
+  <app-files-tree (selected)="onSelect($event)"
+                  [enableNavigateTo]="false"
+                  [enableCopyMove]="false"
+                  [showFiles]="true"
+                  [allowShares]="false"
+                  [allowSpaces]="allowSpaces"
+                  [sideBarHeader]="false"
+                  [toggleNodesAtStartup]="toggleNodesAtStartup"
+                  [resizeOffset]="200">
+  </app-files-tree>
+</div>
+<div class="modal-footer">
+  @if (errorSelection) {
+    <span class="me-auto fs-sm text-danger text-truncate">{{ errorSelection }}</span>
+  }
+  <button (click)="layout.closeDialog()" class="btn btn-sm btn-secondary" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()" [disabled]="!selection" class="btn btn-sm btn-primary" type="button" l10nTranslate>Confirm</button>
+</div>
+
+

@@ -1,0 +1,48 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="box-transparent">
+  <div class="box-header">
+    <fa-icon [icon]="icons.faFileLines"></fa-icon>
+    <span class="box-title" l10nTranslate>Files</span>
+    <fa-icon [icon]="moreElements ? icons.faMagnifyingGlassMinus : icons.faMagnifyingGlassPlus"
+             (click)="switchMore()"
+             class="ms-auto btn-link"
+             role="button">
+    </fa-icon>
+  </div>
+  <div class="box-body px-0 py-0">
+    @for (f of files(); track f.id; let last = $last) {
+      <ul class="products-list product-list-in-box" [class.border-0]="last">
+        <li (click)="goToFile(f)" class="item">
+          <div class="product-img">
+            <img [src]="f.mimeUrl" alt="">
+          </div>
+          <div class="product-info">
+          <span class="product-title">
+            <span>{{ f.name }}</span>
+          </span>
+            <span class="product-description text-{{f.iconClass}}">
+              @if (f.inTrash) {
+                <fa-icon [icon]="icons.faTrashAlt"></fa-icon>
+              }
+              <fa-icon [icon]="f.icon" class="me-1"></fa-icon>
+              <span>{{ f.showedPath }}</span>
+          </span>
+          </div>
+          <div class="product-badge">
+            <span class="badge rounded-pill bg-warning">{{ f.mtime | amTimeAgo:true }}</span>
+          </div>
+        </li>
+      </ul>
+    } @empty {
+      <div class="d-flex flex-column justify-content-center text-align-center text-gray mt-5">
+        <fa-icon [icon]="icons.faFileLines" size="4x"></fa-icon>
+        <div class="mt-4" l10nTranslate>No recent files</div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,91 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.white-space-normal {
+  white-space: normal !important;
+}
+
+.white-space-truncate {
+  white-space: nowrap !important;
+}
+
+.word-break-all {
+  word-break: break-all;
+}
+
+.text-align-center {
+  text-align: center;
+}
+
+.text-align-end {
+  text-align: end;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-gray {
+  color: $gray !important;
+}
+
+.text-purple {
+  color: $purple !important;
+}
+
+.text-muted {
+  color: $muted !important;
+}
+
+.text-light-gray {
+  color: $gray-light;
+}
+
+.text-light-green {
+  color: $light-green;
+}
+
+.text-body-color {
+  color: $body-color;
+}
+
+.text-failed {
+  text-decoration: line-through;
+}
+
+.fs-lg {
+  font-size: $font-size-lg;
+}
+
+.fs-md {
+  font-size: $font-size-md;
+}
+
+.fs-sm {
+  font-size: $font-size-sm !important;
+}
+
+.fs-xs {
+  font-size: $font-size-xs !important;
+}
+
+.fs-xxs {
+  font-size: $font-size-xxs !important;
+}
+
+.fs-xxxs {
+  font-size: $font-size-xxxs !important;
+}
+
+.fs-xxxxs {
+  font-size: $font-size-xxxxs !important;
+}
+
+.fw-500 {
+  font-weight: 500;
+}

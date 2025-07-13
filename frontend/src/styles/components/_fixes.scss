@@ -1,0 +1,32 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+// fix firefox outline
+a, .row, tbody {
+  outline: none !important;
+}
+
+select:focus, .form-select:focus {
+  box-shadow: none !important;
+}
+
+hr {
+  border-top: .5px solid;
+  color: $gray;
+}
+
+// fix onlyoffice iframe blinking when we hide and show via the windows manager
+.doc-placeholder {
+  display: none !important;
+}
+
+.progress-bar {
+  overflow: visible !important;
+}
+
+.CodeMirror-scrollbar-filler {
+  background-color: transparent !important;
+}

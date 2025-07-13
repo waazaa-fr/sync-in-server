@@ -1,0 +1,597 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<!--Start Top Menu-->
+<div class="app-top-menu">
+  <button (click)="loadFiles()"
+          class="d-none d-sm-block btn btn-sm btn-secondary me-1"
+          [tooltip]="'Refresh' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faArrowRotateRight" [animation]="loading ? 'spin' : null"></fa-icon>
+  </button>
+  <!--Start New Button-->
+  @if (!isTrashRepo && !inSharesList) {
+    <div (onShown)="initUpload()" class="btn-group btn-group-sm me-1" dropdown>
+      <button dropdownToggle
+              class="btn btn-sm btn-secondary dropdown-toggle"
+              [tooltip]="'New' | translate:locale.language"
+              container="body"
+              type="button">
+        <fa-icon [icon]="icons.faPlus"></fa-icon>
+      </button>
+      <ul *dropdownMenu class="dropdown-menu" role="menu">
+        <li role="menuitem">
+          <a (click)="openNewDialog('directory')" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.PERSONAL"></fa-icon>New folder</span>
+          </a>
+        </li>
+        <li role="menuitem">
+          <a (click)="openNewDialog('file')" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.faFileAlt"></fa-icon>New document</span>
+          </a>
+        </li>
+        <li role="menuitem">
+          <a (click)="openNewDialog('download')" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.faGlobe"></fa-icon>Download from URL</span>
+          </a>
+        </li>
+        <li role="menuitem">
+          <a appUploadFiles [options]="{isMultiple: true}" (uploadFiles)="onUploadFiles($event)" class="dropdown-item" id="uploadFilesButton">
+            <span l10nTranslate><fa-icon [icon]="icons.faUpload"></fa-icon>Upload files</span>
+          </a>
+          @if (supportUploadFolder) {
+            <a appUploadFiles [options]="{isDirectory: true}" (uploadFiles)="onUploadFiles($event, true)" class="dropdown-item" id="uploadFoldersButton">
+              <span l10nTranslate><fa-icon [icon]="icons.faUpload"></fa-icon>Upload folders</span>
+            </a>
+          }
+        </li>
+      </ul>
+    </div>
+  }
+  <!--End New Button-->
+  <button (click)="downloadFiles()"
+          [disabled]="!hasSelection || hasDisabledItemsInSelection"
+          class="btn btn-sm btn-secondary me-1"
+          [tooltip]="'Download' | translate:locale.language"
+          container="body"
+          type="button">
+    <fa-icon [icon]="icons.faDownload"></fa-icon>
+  </button>
+  <!--Start Share Button-->
+  @if (!isTrashRepo && canShare.outside || inSharesList) {
+    <div class="btn-group btn-group-sm me-1" [isDisabled]="!hasSelection || inSharesList && !selection[0].canBeReShared" dropdown>
+      <button dropdownToggle
+              class="btn btn-sm btn-secondary dropdown-toggle"
+              [tooltip]="'Share' | translate:locale.language"
+              container="body"
+              type="button">
+        <fa-icon [icon]="icons.SHARES"></fa-icon>
+      </button>
+      <ul *dropdownMenu class="dropdown-menu" role="menu">
+        <li role="menuitem">
+          <a (click)="openShareDialog()" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.SHARES"></fa-icon>New share</span>
+          </a>
+        </li>
+        <li role="menuitem">
+          <a (click)="openShareLinkDialog()" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.faLink"></fa-icon>New share link</span>
+          </a>
+        </li>
+        @if (isFilesRepo) {
+          <li role="menuitem">
+            <a (click)="openSpaceAnchorFileDialog()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faAnchor"></fa-icon>Anchor to a space</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+  <!--End Share Button-->
+  @if (isTrashRepo) {
+    <button (click)="openTrashDialog(true)"
+            [disabled]="!hasSelection"
+            class="btn btn-sm btn-secondary me-1"
+            [tooltip]="'Remove' | translate:locale.language"
+            container="body"
+            type="button">
+      <fa-icon [icon]="icons.faBan"></fa-icon>
+    </button>
+    @if (inRootSpace) {
+      <button (click)="openEmptyTrashDialog()"
+              [disabled]="!stats.elements"
+              class="btn btn-sm btn-secondary me-1"
+              [tooltip]="'Empty' | translate:locale.language"
+              container="body"
+              type="button">
+        <fa-icon [icon]="icons.TRASH"></fa-icon>
+      </button>
+    }
+  }
+  <!--Start Actions Button-->
+  <div [isDisabled]="!hasSelection" class="btn-group btn-group-sm me-1" dropdown>
+    <button class="btn btn-sm btn-secondary dropdown-toggle" dropdownToggle type="button">
+      <fa-icon [icon]="icons.faEllipsis"></fa-icon>
+    </button>
+    <ul *dropdownMenu class="dropdown-menu" role="menu">
+      @if (selection.length === 1) {
+        @if (selection[0].isViewable) {
+          <li role="menuitem">
+            <a (click)="shortcutView()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faEye"></fa-icon>View</span>
+            </a>
+          </li>
+        }
+        @if (selection[0].isEditable) {
+          <li role="menuitem">
+            <a (click)="shortcutEdit()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faPen"></fa-icon>Edit</span>
+            </a>
+          </li>
+        }
+        @if (!inSharesList) {
+          <li role="menuitem">
+            <a (click)="shortcutRename()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faSpellCheck"></fa-icon>Rename</span>
+            </a>
+          </li>
+        }
+        <li role="menuitem">
+          <a (click)="layout.showRSideBarTab(TAB_MENU.COMMENTS, true)" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.faCommentDots"></fa-icon>Comment</span>
+          </a>
+        </li>
+        @if (isElectronApp && selection[0].isDir) {
+          <li role="menuitem">
+            <a (click)="addToSync()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faRotate"></fa-icon>Synchronize</span>
+            </a>
+          </li>
+        }
+        @if (!inSharesList && !selection[0].isCompressible) {
+          <li role="menuitem">
+            <a (click)="decompressFile()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faFileArchive"></fa-icon>Decompress</span>
+            </a>
+          </li>
+        }
+      }
+      @if (canCompress) {
+        <li role="menuitem">
+          <a (click)="openCompressionDialog()" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.faFileArchive"></fa-icon>Compress</span>
+          </a>
+        </li>
+      }
+      @if (!hasDisabledItemsInSelection) {
+        <li role="menuitem">
+          <a (click)="copyMoveFiles()" class="dropdown-item">
+            <span l10nTranslate><fa-icon [icon]="icons.faArrowsAlt"></fa-icon>Copy/Move</span>
+          </a>
+        </li>
+      }
+      <li role="menuitem">
+        <a (click)="addToClipboard()" class="dropdown-item">
+          <span l10nTranslate><fa-icon [icon]="icons.faClipboardList"></fa-icon>Clipboard</span>
+        </a>
+      </li>
+      <li role="menuitem">
+        <a (click)="layout.showRSideBarTab(TAB_MENU.SELECTION)" class="dropdown-item">
+          <span l10nTranslate><fa-icon [icon]="icons.faCircleInfo"></fa-icon>Informations</span>
+        </a>
+      </li>
+      @if (!inSharesList) {
+        <li class="dropdown-divider"></li>
+        <li role="menuitem">
+          @if (isTrashRepo) {
+            <a (click)="openTrashDialog(true)" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.faBan"></fa-icon>Remove</span>
+            </a>
+          } @else {
+            <a (click)="openTrashDialog()" class="dropdown-item">
+              <span l10nTranslate><fa-icon [icon]="icons.TRASH"></fa-icon>Trash</span>
+            </a>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+  <!--End Actions Button-->
+  <div class="ms-auto">
+    <!--Start Filter Button-->
+    <div class="btn-group btn-group-sm me-1">
+      <app-input-filter class="d-none d-sm-block"></app-input-filter>
+    </div>
+    <!--End Filter Button-->
+    <!--Start View Button-->
+    <app-navigation-view [sortParams]="sortTable.sortParam"
+                         [sortFields]="btnSortFields"
+                         (sortBy)="sortBy($event)"
+                         (switchView)="switchView($event)">
+    </app-navigation-view>
+    <!--End View Button-->
+  </div>
+</div>
+<!--End Top Menu-->
+@if (galleryMode?.enabled) {
+  <!--Start Gallery Content-->
+  <div class="app-thumbs">
+    <app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                        [childHeight]="galleryMode.dimensions"
+                        [childWidth]="galleryMode.dimensions"
+                        [items]="files | searchFilter:inputFilter.search():'name'"
+                        [galleryMode]="true"
+                        [resizeOffset]="110">
+      <div *ngTemplateOutlet="CommonMessages"></div>
+      <div id="thumb-files" class="row g-0" tabindex="-1">
+        @for (f of scrollView?.viewPortItems; track f.id) {
+          <div (click)="onSelect($event, f)"
+               (contextmenu)="onTargetContextMenu($event, f)"
+               (pressup)="onTargetContextMenu($event, f)"
+               (tap)="browse(f)"
+               [class.disabled]="f.isDisabled"
+               [class.deleted]="f.isBeingDeleted"
+               [class.selected]="f.isSelected"
+               [style.height.px]="galleryMode.dimensions"
+               [style.width.px]="galleryMode.dimensions"
+               class="card">
+            <div [attr.rowIndex]="$index" class="card-body">
+              @if (f.isImage) {
+                <img (error)="f.isImage = false" [style.height.px]="galleryMode.image" alt="" class="img-fluid"
+                     draggable="true" src="{{f.thumbnailUrl}}?size={{galleryMode.imageRes}}">
+              } @else {
+                <img [src]="f.mimeUrl" [height]="galleryMode.image" [width]="galleryMode.image" alt="" draggable="true" (error)="f.fallBackMimeUrl()">
+              }
+              <span class="label-bottom-right">
+                @if (f.lock) {
+                  <span class="fs-lg cursor-pointer me-1" tooltip="{{f.lock.owner}}" placement="auto">
+                    <fa-icon [icon]="f.lock.isExclusive ? icons.faLock : icons.faLockOpen"></fa-icon>
+                  </span>
+                }
+                @if (f.shares.length) {
+                  <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                        [style.font-size.px]="galleryMode.textSize"
+                        class="badge rounded-pill bg-primary cursor-pointer">
+                      <fa-icon [icon]="icons.SHARES"></fa-icon>&nbsp;{{ f.shares.length }}
+                    </span>
+                }
+                @if (f.spaces.length) {
+                  <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                        [style.font-size.px]="galleryMode.textSize"
+                        class="badge rounded-pill bg-primary cursor-pointer ms-1">
+                      <fa-icon [icon]="icons.SPACES"></fa-icon>&nbsp;{{ f.spaces.length }}
+                    </span>
+                }
+                @if (f.links.length) {
+                  <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                        [style.font-size.px]="galleryMode.textSize"
+                        class="badge rounded-pill bg-primary cursor-pointer me-1">
+                        <fa-icon [icon]="icons.LINKS"></fa-icon>&nbsp;{{ f.links.length }}
+                  </span>
+                }
+                @if (f.syncs.length) {
+                  <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                        [style.font-size.px]="galleryMode.textSize"
+                        class="badge rounded-pill bg-primary cursor-pointer me-1">
+                        <fa-icon [icon]="icons.SYNC"></fa-icon>&nbsp;{{ f.syncs.length }}
+                  </span>
+                }
+                @if (f.hasComments) {
+                  <span (click)="layout.showRSideBarTab(TAB_MENU.COMMENTS, true)"
+                        [style.font-size.px]="galleryMode.textSize"
+                        class="badge rounded-pill bg-success cursor-pointer">
+                  <fa-icon [icon]="icons.faCommentDots"></fa-icon>
+                </span>
+                }
+              </span>
+              @if (f.root) {
+                <span class="label-bottom-left">
+                    <app-user-avatar [user]="f.root.owner" [height]="galleryMode.dimensions / 3" [width]="galleryMode.dimensions / 3" [fontSize]="galleryMode.faSize / 2"></app-user-avatar>
+                </span>
+              }
+              @if (f.newly) {
+                <span class="label-top-right">
+                  <span [style.font-size.px]="galleryMode.textSize" class="badge rounded-pill bg-warning" l10nTranslate>{{ f.hTimeAgo }}</span>
+                </span>
+              }
+            </div>
+            <div class="card-footer text-center text-truncate p-1">
+              @if (f.isRenamed) {
+                <input appInputEdit
+                       [inputObject]="f"
+                       [fullWidth]="true"
+                       [textCenter]="true"
+                       (renamingInProgress)="setRenamingInProgress($event)"
+                       (updateObject)="renameFile($event)"
+                       [style.font-size.px]="galleryMode.textSize"
+                       type="text"
+                       required>
+              } @else {
+                <span [style.font-size.px]="galleryMode.textSize" class="no-pointer-events" draggable="false">{{ f.name }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </app-virtual-scroll>
+  </div>
+  <!--End Gallery Content-->
+} @else {
+  <!--Start Table Files Content-->
+  <table class="app-table">
+    <thead>
+    <tr>
+      @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+        @if (th.value.show) {
+          <th (click)="sortBy(th.key)"
+              [style.width.%]="th.value.width"
+              [class.text-align-center]="th.value.textCenter"
+              [class.cursor-pointer]="th.value.sortable"
+              class="{{th.value.class}}"
+              l10nTranslate>
+            {{ th.value.label }}
+            @if (sortTable.sortParam.column === th.key) {
+              <fa-icon [icon]="sortTable.sortParam.asc ? icons.faArrowDown : icons.faArrowUp" [fixedWidth]="false"></fa-icon>
+            }
+          </th>
+        }
+      }
+    </tr>
+    </thead>
+  </table>
+  <app-virtual-scroll (contextmenu)="onContextMenu($event)"
+                      [bufferAmount]="5"
+                      [items]="files | searchFilter:inputFilter.search():'name'">
+    <div *ngTemplateOutlet="CommonMessages"></div>
+    <table class="app-table">
+      <tbody id="table-files" tabindex="-1">
+        @for (f of scrollView?.viewPortItems; track f.id) {
+          <tr (click)="onSelect($event, f)"
+              (contextmenu)="onTargetContextMenu($event, f)"
+              (pressup)="onTargetContextMenu($event, f)"
+              (tap)="browse(f)"
+              [class.disabled]="f.isDisabled"
+              [class.deleted]="f.isBeingDeleted"
+              [class.selected]="f.isSelected">
+            @for (th of tableHeaders | keyvalue: originalOrderKeyValue; track th.key) {
+              @if (th.value.show) {
+                <td [style.width.%]="th.value.width"
+                    [class.text-align-center]="th.value.textCenter"
+                    class="{{th.value.class}} {{th.value.newly ? 'prop-newly-' + f[th.value.newly] : ''}}">
+                  @switch (th.key) {
+                    @case ('name') {
+                      <div class="d-flex align-items-center" draggable="true">
+                        <img [src]="f.mimeUrl" alt="" draggable="false" height="30" width="30" (error)="f.fallBackMimeUrl()">
+                        @if (f.isRenamed) {
+                          <input (renamingInProgress)="setRenamingInProgress($event)"
+                                 (updateObject)="renameFile($event)"
+                                 [inputObject]="f"
+                                 appInputEdit
+                                 required
+                                 type="text">
+                        } @else {
+                          <div class="d-flex flex-column text-truncate">
+                            <span class="no-pointer-events" draggable="false">{{ f.name }}</span>
+                            @if (inSharesList && f.root?.description) {
+                              <span class="no-pointer-events text-muted fs-xxxs" draggable="false">{{ f.root.description }}</span>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                    @case ('anchored') {
+                      @if (f.root) {
+                        <div class="d-flex flex-column align-items-center">
+                          <app-user-avatar [user]="f.root.owner"></app-user-avatar>
+                        </div>
+                      }
+                    }
+                    @case ('infos') {
+                      @if (f.lock) {
+                        <span class="fs-lg cursor-pointer me-1" tooltip="{{f.lock.owner}}" placement="auto">
+                          <fa-icon [icon]="f.lock.isExclusive ? icons.faLock : icons.faLockOpen"></fa-icon>
+                        </span>
+                      }
+                      @if (f.shares.length) {
+                        <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                              class="badge rounded-pill bg-primary cursor-pointer me-1">
+                          <fa-icon [icon]="icons.SHARES"></fa-icon>&nbsp;{{ f.shares.length }}
+                        </span>
+                      }
+                      @if (f.links.length) {
+                        <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                              class="badge rounded-pill bg-primary cursor-pointer me-1">
+                          <fa-icon [icon]="icons.LINKS"></fa-icon>&nbsp;{{ f.links.length }}
+                        </span>
+                      }
+                      @if (f.spaces.length) {
+                        <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                              class="badge rounded-pill bg-primary cursor-pointer me-1">
+                          <fa-icon [icon]="icons.SPACES"></fa-icon>&nbsp;{{ f.spaces.length }}
+                        </span>
+                      }
+                      @if (f.syncs.length) {
+                        <span (click)="layout.showRSideBarTab(TAB_MENU.SELECTION, true)"
+                              class="badge rounded-pill bg-primary cursor-pointer me-1">
+                          <fa-icon [icon]="icons.SYNC"></fa-icon>&nbsp;{{ f.syncs.length }}
+                        </span>
+                      }
+                      @if (f.hasComments) {
+                        <span (click)="layout.showRSideBarTab(TAB_MENU.COMMENTS, true)" class="badge rounded-pill bg-success cursor-pointer">
+                          <fa-icon [icon]="icons.faCommentDots"></fa-icon>
+                        </span>
+                      }
+                    }
+                    @case ('permissions') {
+                      @if (f.root && f.root.permissions) {
+                        <app-file-permissions [permissions]="f.root.hPerms" tooltipPlacement="auto"></app-file-permissions>
+                      }
+                    }
+                    @case ('size') {
+                      {{ f.hSize }}
+                    }
+                    @case ('mtime') {
+                      {{ f.hTimeAgo }}
+                    }
+                  }
+                </td>
+              }
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-virtual-scroll>
+  <!--End Table Files Content-->
+}
+<!--Start Foot Content-->
+<div class="app-foot-menu">
+  <span>
+    @if (stats.dirs) {
+      <span class="me-1">{{ stats.dirs }} {{ (stats.dirs > 1 ? 'directories' : 'directory') | translate:locale.language }}</span>
+    }
+    @if (stats.files) {
+      <span>{{ stats.files }} {{ (stats.files > 1 ? 'files' : 'file') | translate:locale.language }}</span>
+    }
+  </span>
+  <span
+    class="mx-auto">{{ (!hasSelection ? 'no_selection' : selection.length > 1 ? 'nb_selections' : 'one_selection') | translate:locale.language:{ nb: selection.length } }}</span>
+  <span><span l10nTranslate>Total</span>&nbsp;{{ stats.size | toBytes }}</span>
+</div>
+<!--End Foot Content-->
+<!--Start Common Messages-->
+<ng-template #CommonMessages>
+  @if (forbiddenResource) {
+    <div class="fs-sm text-center text-danger fw-bold no-select">
+      <span l10nTranslate>Forbidden resource</span>
+    </div>
+  } @else if (locationNotFound) {
+    <div class="fs-sm text-center text-danger fw-bold no-select">
+      <span l10nTranslate>Location not found</span>
+    </div>
+  } @else if (serverError) {
+    <div class="fs-sm text-center text-danger fw-bold no-select">
+      <span l10nTranslate>Server Error</span>
+    </div>
+  } @else if (!isTrashRepo && !loading && !stats.elements) {
+    <div class="fs-sm text-center text-muted fw-bold no-select">
+      <span l10nTranslate>Drag and drop your files here</span>
+    </div>
+  }
+</ng-template>
+<!--End Common Messages-->
+<!--Start Context Menu -->
+<context-menu #FileContextMenu>
+  @if (selection.length === 1) {
+    @if (selection[0].isViewable) {
+      <ng-template (execute)="shortcutView()" contextMenuItem>
+        <span l10nTranslate><fa-icon [icon]="icons.faEye"></fa-icon>View</span>
+      </ng-template>
+    }
+    @if (selection[0].isEditable) {
+      <ng-template (execute)="shortcutEdit()" contextMenuItem>
+        <span l10nTranslate><fa-icon [icon]="icons.faPen"></fa-icon>Edit</span>
+      </ng-template>
+    }
+    @if (!inSharesList) {
+      <ng-template (execute)="shortcutRename()" contextMenuItem>
+        <span l10nTranslate><fa-icon [icon]="icons.faSpellCheck"></fa-icon>Rename</span>
+      </ng-template>
+    }
+    <ng-template (execute)="layout.showRSideBarTab(TAB_MENU.COMMENTS, true)" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faCommentDots"></fa-icon>Comment</span>
+    </ng-template>
+    @if (isElectronApp && selection[0].isDir) {
+      <ng-template (execute)="addToSync()" contextMenuItem>
+        <span l10nTranslate><fa-icon [icon]="icons.faRotate"></fa-icon>Synchronize</span>
+      </ng-template>
+    }
+  }
+  @if (canCompress) {
+    <ng-template (execute)="openCompressionDialog()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faFileArchive"></fa-icon>Compress</span>
+    </ng-template>
+  }
+  @if (!inSharesList && selection.length === 1 && !selection[0].isCompressible) {
+    <ng-template (execute)="decompressFile()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faFileArchive"></fa-icon>Decompress</span>
+    </ng-template>
+  }
+  @if (!hasDisabledItemsInSelection) {
+    <ng-template (execute)="copyMoveFiles()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faArrowsAlt"></fa-icon>Copy/Move</span>
+    </ng-template>
+  }
+  @if (!isTrashRepo && canShare.outside || inSharesList && selection[0]?.canBeReShared) {
+    <ng-template [subMenu]="ShareContextMenu" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.SHARES"></fa-icon>Share</span>
+    </ng-template>
+  }
+  <ng-template (execute)="addToClipboard()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faClipboardList"></fa-icon>Clipboard</span>
+  </ng-template>
+  @if (!hasDisabledItemsInSelection) {
+    <ng-template (execute)="downloadFiles()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faDownload"></fa-icon>Download</span>
+    </ng-template>
+  }
+  <ng-template (execute)="layout.showRSideBarTab(TAB_MENU.SELECTION)" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faCircleInfo"></fa-icon>Informations</span>
+  </ng-template>
+  @if (!inSharesList) {
+    <ng-template [divider]="true" contextMenuItem></ng-template>
+    <ng-template (execute)="openTrashDialog(isTrashRepo)" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="isTrashRepo ? icons.faBan : icons.TRASH"></fa-icon>
+      {{ isTrashRepo ? 'Remove' : 'Trash' }}</span>
+    </ng-template>
+  }
+</context-menu>
+<context-menu #ShareContextMenu>
+  <ng-template (execute)="openShareDialog()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.SHARES"></fa-icon>New share</span>
+  </ng-template>
+  <ng-template (execute)="openShareLinkDialog()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.faLink"></fa-icon>New share link</span>
+  </ng-template>
+  @if (isFilesRepo) {
+    <ng-template (execute)="openSpaceAnchorFileDialog()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faAnchor"></fa-icon>Anchor to a space</span>
+    </ng-template>
+  }
+</context-menu>
+<context-menu #MainReadOnlyContextMenu>
+  <ng-template (execute)="openEmptyTrashDialog()" contextMenuItem>
+    <span l10nTranslate><fa-icon [icon]="icons.TRASH"></fa-icon>Empty</span>
+  </ng-template>
+</context-menu>
+<context-menu #MainContextMenu>
+  @if (inSharesList) {
+    <ng-template (execute)="loadFiles()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faArrowRotateRight"></fa-icon>Refresh</span>
+    </ng-template>
+  } @else {
+    <ng-template (execute)="openNewDialog('directory')" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.PERSONAL"></fa-icon>New folder</span>
+    </ng-template>
+    <ng-template (execute)="openNewDialog('file')" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faFileAlt"></fa-icon>New document</span>
+    </ng-template>
+    <ng-template (execute)="openNewDialog('download')" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faGlobe"></fa-icon>Download from URL</span>
+    </ng-template>
+    <ng-template (execute)="shortcutUploadFiles()" contextMenuItem>
+      <span l10nTranslate><fa-icon [icon]="icons.faUpload"></fa-icon>Upload files</span>
+    </ng-template>
+    @if (supportUploadFolder) {
+      <ng-template (execute)="shortcutUploadFolders()" contextMenuItem>
+        <span l10nTranslate><fa-icon [icon]="icons.faUpload"></fa-icon>Upload folders</span>
+      </ng-template>
+    }
+  }
+</context-menu>
+<!--End Context Menu-->

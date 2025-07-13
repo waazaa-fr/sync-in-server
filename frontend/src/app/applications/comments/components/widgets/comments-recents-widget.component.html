@@ -1,0 +1,48 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="box-transparent">
+  <div class="box-header">
+    <fa-icon [icon]="icons.faCommentDots"></fa-icon>
+    <span class="box-title" l10nTranslate>Comments</span>
+    <fa-icon [icon]="moreElements ? icons.faMagnifyingGlassMinus : icons.faMagnifyingGlassPlus"
+             (click)="switchMore()"
+             class="ms-auto btn-link"
+             role="button">
+    </fa-icon>
+  </div>
+  <div class="box-body px-0 py-0">
+    @for (c of comments(); track c.id; let last = $last) {
+      <ul class="products-list product-list-in-box" [class.border-0]="last">
+        <li (click)="goToFile(c)" class="item">
+          <div class="product-img">
+            <app-user-avatar [user]="c.author"></app-user-avatar>
+          </div>
+          <div class="product-info">
+          <span class="product-title">
+            <span>{{ c.content }}</span>
+          </span>
+            <span class="product-description text-{{c.iconClass}}">
+              @if (c.file.inTrash) {
+                <fa-icon [icon]="icons.faTrashAlt"></fa-icon>
+              }
+              <fa-icon [icon]="c.icon" class="me-1"></fa-icon>
+              <span>{{ c.showedPath }}</span>
+          </span>
+          </div>
+          <div class="product-badge">
+            <span class="badge rounded-pill bg-warning">{{ c.modifiedAt | amTimeAgo:true }}</span>
+          </div>
+        </li>
+      </ul>
+    } @empty {
+      <div class="d-flex flex-column justify-content-center text-align-center text-gray mt-5">
+        <fa-icon [icon]="icons.faCommentDots" size="4x"></fa-icon>
+        <div class="mt-4" l10nTranslate>No recent comments</div>
+      </div>
+    }
+  </div>
+</div>

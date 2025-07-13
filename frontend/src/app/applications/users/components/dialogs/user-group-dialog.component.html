@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header align-items-center">
+  <h4 class="modal-title">
+    <fa-icon [icon]="icons.GROUPS" class="me-2"></fa-icon>
+    @if (group.id) {
+      <span>{{ group.name }}</span>
+    } @else {
+      <span l10nTranslate>New personal group</span>
+    }
+    @if (loading) {
+      <fa-icon [icon]="icons.faSpinner" animation="spin" class="ms-2" size="sm"></fa-icon>
+    }
+  </h4>
+  @if (group.id) {
+    <h4 class="modal-title ms-auto">
+      @if (isPersonalGroup) {
+        <span l10nTranslate>Edit personal group</span>
+      } @else {
+        <span l10nTranslate>Edit group</span>
+      }
+    </h4>
+  }
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white {{group.id ? 'ms-2' : 'ms-auto'}} ms-2" type="button"></button>
+</div>
+<div class="modal-body">
+  <div class="d-flex col-12 pb-3">
+    <div class="flex-fill col-6 pe-4">
+      <label for="name" l10nTranslate>Name</label>
+      <input id="name"
+             appAutofocus
+             [disabled]="!isPersonalGroup"
+             [autoSelect]="false"
+             [(ngModel)]="group.name"
+             [class.is-invalid]="!group.name"
+             class="form-control form-control-sm"
+             autocomplete="off"
+             type="text">
+    </div>
+    <div class="flex-fill col-6 ps-4">
+      <label for="description" l10nTranslate>Description</label>
+      <input id="description"
+             [(ngModel)]="group.description"
+             [disabled]="!isPersonalGroup"
+             class="form-control form-control-sm"
+             autocomplete="off"
+             type="text">
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button (click)="onCancel()" class="btn btn-sm btn-secondary ms-auto" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()"
+          [disabled]="!this.group.name || submitted"
+          class="btn btn-sm btn-primary"
+          type="button"
+          l10nTranslate>
+    Confirm
+  </button>
+</div>

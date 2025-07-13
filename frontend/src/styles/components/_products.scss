@@ -1,0 +1,78 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.products-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 40px;
+
+  &.product-list-in-box {
+    border-bottom: .5px solid;
+    > .item {
+      box-shadow: none;
+      @include border-radius($box-border-radius);
+    }
+  }
+
+  > .item {
+    display: flex;
+    align-items: center;
+    @include border-radius($box-border-radius);
+    padding: 4px 70px 4px 5px;
+    @extend .text-truncate;
+  }
+
+  > li {
+    cursor: pointer;
+  }
+
+  .product-img {
+    float: left;
+
+    img {
+      width: 30px;
+      height: 30px;
+    }
+  }
+
+  .product-info {
+    margin-left: .3rem;
+    min-width: 0;
+  }
+
+  .product-title {
+    display: flex;
+    font-weight: 400;
+    white-space: nowrap;
+
+    span:first-of-type {
+      @extend .text-truncate;
+      font-size: $font-size-xxs;
+    }
+  }
+
+  .product-badge {
+    display: flex;
+    align-self: center;
+    position: absolute;
+    right: 8px;
+    font-size: $font-size-xxs;
+
+    > span {
+      display: flex;
+    }
+  }
+
+  .product-description {
+    @extend .text-truncate;
+    display: block;
+    font-size: 11px;
+    color: #999;
+  }
+}
+
+

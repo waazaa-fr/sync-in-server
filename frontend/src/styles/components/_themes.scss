@@ -1,0 +1,29 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+body {
+  .navbar {
+    background-color: $primary;
+  }
+
+  &.theme-light {
+    @include skin-light-app();
+    @include skin-light-left-sidebar();
+    @include skin-light-right-sidebar();
+    @include skin-light-chat();
+    @include skin-light-tree();
+    @include skin-light-miscellaneous();
+  }
+
+  &.theme-dark {
+    @include skin-dark-app();
+    @include skin-dark-left-sidebar();
+    @include skin-dark-right-sidebar();
+    @include skin-dark-chat();
+    @include skin-dark-tree();
+    @include skin-dark-miscellaneous();
+  }
+}

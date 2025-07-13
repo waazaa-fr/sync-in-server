@@ -1,0 +1,153 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+// Custom variables
+$application_title: 'Sync-in';
+$application_background: linear-gradient(to bottom right, rgb(2, 0, 36) 0%, rgb(28, 104, 176) 35%, rgb(152, 92, 160) 100%);
+
+// Bootstrap overrides
+// Colors
+$white: #ffffff;
+$gray-dark: #384042;
+$gray: #9faecb;
+$gray-mid: #b9c5da;
+$gray-light: #d4dbe8;
+$gray-lighter: #e1e6ef;
+$gray-lightest: #eef1f6;
+$light-blue: #2e92ce;
+$lighter-blue: #94c7e8;
+$red: #dc3545;
+$green: #06854b;
+$dark-green: #008000;
+$light-green: #37cb46;
+$aqua: #0dcaf0;
+$blue: #0576b9;
+$dark-mid-blue: #337abd;
+$dark-blue: #195d9e;
+$navy: #0b2640;
+$cyan: #17a2b8;
+$teal: #39CCCC;
+$dark-teal: #527a7a;
+$olive: #3D9970;
+$lime: #01FF70;
+$orange: #ff7700;
+$yellow: #ffc107;
+$fuchsia: #F012BE;
+$purple: #9b59b6;
+$maroon: #b33c00;
+$black: #111;
+
+$primary: #1c68b0;
+$success: $green;
+$secondary: #c3cee0;
+$secondary-light: #dde3ee;
+$info: $aqua;
+$warning: $orange;
+$danger: $red;
+$mark-bg: $light-green;
+$muted: #777;
+// Options
+//--------------------------------------------------------
+//Body background (Affects main content background only)
+$body-bg: $gray-lighter;
+$body-color: #333;
+$custom-color: #212529;
+$custom-dark-color: #28353b;
+$list-group-color: $custom-color;
+$placeholder-color: #8c8c8c;
+// Quickly modify global styling by enabling or disabling optional features.
+$enable-transitions: true;
+$enable-rounded: true;
+$enable-grid-classes: true;
+$enable-sidebar-nav-rounded: false;
+$border-color: $gray-lighter;
+$hr-color: $secondary;
+$btn-close-width: .75em !default;
+$btn-close-padding-x: .5em !default;
+
+// Font, line-height, and color for body text, headings, and more.
+$font-size-base: 0.9rem; // Assumes the browser default, typically `16px`
+$font-size-xl: 1.1rem;
+$font-size-lg: 1rem;
+$font-size-md: .90rem;
+$font-size-sm: .80rem;
+$font-size-xs: .75rem;
+$font-size-xxs: .70rem;
+$font-size-xxxs: .65rem;
+$font-size-xxxxs: .60rem;
+
+//LAYOUT
+//--------------------------------------------------------
+$spacer: 0.6rem;
+// Links
+$link-color: $blue;
+$link-decoration: none;
+$link-hover-color: darken($link-color, 5%);
+$link-hover-decoration: none;
+// Forms
+$input-bg: $white;
+$input-color: $custom-color;
+$input-border-color: $gray-light;
+$input-font-size-sm: $font-size-xs;
+$input-border-width: 1px;
+$input-box-shadow: none !important;
+$input-focus-box-shadow: none !important;
+$form-group-margin-bottom: 0.6rem;
+$form-check-margin-bottom: 0rem;
+// Table-hover
+$table-bg-hover: lighten($lighter-blue, 12%);
+$table-bg: transparent !important;
+$table-color: inherit !important;
+$selected-background: darken($lighter-blue, 6%);
+// Dropdowns
+$dropdown-link-color: #444;
+$dropdown-link-active-color: $dropdown-link-color;
+$dropdown-link-hover-bg: $table-bg-hover !important;
+$dropdown-link-active-bg: $dropdown-link-hover-bg;
+$dropdown-item-padding-y: .25rem;
+$dropdown-item-padding-x: 1rem;
+$dropdown-padding-y: .2rem;
+$dropdown-header-color: #8aa4af;
+// Modals
+$modal-inner-padding: .4rem;
+$modal-header-padding-x: .8rem;
+$modal-header-padding-y: .5rem;
+$modal-sm: 500px;
+$modal-md: 650px;
+$modal-xl: 1000px;
+$modal-content-border-width: .5px;
+// Progress-bar
+$progress-height: 20px;
+// Badges
+$badge-font-size: 89%;
+// Others
+$border-radius-base: 4px;
+// Buttons
+$btn-font-size: $font-size-xs !default;
+$btn-font-size-sm: $font-size-xs;
+$btn-padding-x-xs: .5rem !default;
+$btn-padding-y-xs: .2rem !default;
+$btn-padding-x-xxs: .2rem !default;
+$btn-padding-y-xxs: .1rem !default;
+$btn-disabled-opacity: 0.4;
+// Badges
+$badge-font-weight: 500 !default;
+// Pagination
+$pagination-font-size: $font-size-xxs !important;
+$pagination-color: $body-color;
+$pagination-hover-color: darken($body-color, 4%);
+
+$pagination-bg: $secondary-light;
+$pagination-hover-bg: darken($secondary-light, 8%);
+$pagination-disabled-bg: $secondary;
+
+$pagination-border-color: darken($secondary, 10%);
+$pagination-hover-border-color: darken($secondary, 10%);
+$pagination-disabled-border-color: darken($secondary-light, 10%);
+
+$pagination-focus-box-shadow: none;
+// List group
+$list-group-border-width: .5px;

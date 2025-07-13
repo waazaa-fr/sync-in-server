@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="sidebar-component-title justify-content-between">
+  <div style="width: 35px"></div>
+  <div>
+    @switch (nbActiveTasks) {
+      @case (0) {
+        <span>{{ (nbTotalTasks === 0 ? 'no_task' : nbTotalTasks > 1 ? 'nb_tasks' : 'one_task') | translate:locale.language:{ nb: nbTotalTasks } }}</span>
+      }
+      @default {
+        <span>{{
+            (nbActiveTasks > 1 ? 'nb_active_tasks' : 'one_active_task') | translate:locale.language:{
+              nba: nbActiveTasks,
+              nb: nbTotalTasks
+            }
+          }}
+      </span>
+      }
+    }
+  </div>
+  @if (nbTotalTasks) {
+    <button (click)="removeTasks()" class="btn btn-xs btn-secondary">
+      <fa-icon [icon]="icons.faTrashAlt"></fa-icon>
+    </button>
+  } @else {
+    <div style="width: 35px"></div>
+  }
+</div>
+<!-- Inner menu: contains the tasks -->
+<div appAutoResize>
+  @for (task of tasks; track task.id) {
+    <div class="task-list">
+      <div (click)="goToFile(task)" [tooltip]="task.result | translate:locale.language" class="px-2 py-1 text-truncate" placement="bottom">
+        <span [class.text-gray-dark]="task.status < 2" [class.text-danger]="task.status >= 2">
+          <fa-icon [icon]="iconsStatus[task.status]" [animation]="task.status === 0 ? 'spin-pulse' : null"></fa-icon>
+          <b><fa-icon [icon]="iconsOperation[task.type]" class="me-1"></fa-icon></b>
+          <span>{{ task.name }}</span>
+          @if (task.status === 2) {
+            <span>&nbsp;:&nbsp;{{ task.result | translate:locale.language }}</span>
+          }
+        </span>
+        <div class="fs-xxxs">
+          <div>
+            <progressbar [max]="100"
+                         [value]="task.status > 0 ? 100 : task.props.progress || 100"
+                         [type]="task.status < 1 ? 'warning' : task.status === 2 ? 'danger' : null"
+                         class="custom-progress-bar position-relative">
+              <span class="d-flex align-items-center justify-content-center position-absolute mx-1 w-100">
+                @if (task.props.size) {
+                  <span>{{ task.props.size | toBytes:2 }}&nbsp;•&nbsp;</span>
+                }
+                @if (task.props.directories) {
+                  <span><fa-icon [icon]="icons.faFolderClosed" [fixedWidth]="false"></fa-icon>&nbsp;{{ task.props.directories }}&nbsp;•&nbsp;</span>
+                }
+                @if (task.props.files) {
+                  <span><fa-icon [icon]="icons.faFile" [fixedWidth]="false"></fa-icon>&nbsp;{{ task.props.files }}&nbsp;•&nbsp;</span>
+                }
+                <span><fa-icon [icon]="icons.faClock" [fixedWidth]="false"></fa-icon>&nbsp;{{ task.startedAt | amTimeAgo:true }}</span>
+              </span>
+            </progressbar>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

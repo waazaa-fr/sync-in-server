@@ -1,0 +1,35 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="btn-group btn-group-sm" dropdown>
+  <button class="btn btn-sm btn-secondary dropdown-toggle" dropdownToggle type="button">
+    <fa-icon [icon]="icons.faCog"></fa-icon>
+  </button>
+  <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu">
+    <li class="dropdown-header fw-bold" l10nTranslate>Display</li>
+    @for (view of viewsMode | keyvalue: originalOrderKeyValue; track view.key) {
+      <li role="menuitem">
+        <a (click)="setView(view.key)" class="dropdown-item">
+        <span><fa-icon [icon]="view.value.icon"></fa-icon>
+          {{ view.value.text }}</span>
+        </a>
+      </li>
+    }
+    <li class="dropdown-header fw-bold mt-1" l10nTranslate>Sort by</li>
+    @for (field of sortFields | keyvalue: originalOrderKeyValue; track field.key) {
+      <li role="menuitem">
+        <a (click)="sortBy.emit(field.key)" class="dropdown-item">
+        <span class="me-2" l10nTranslate>
+          {{ field.value }}
+          @if (sortParams.column === field.key) {
+            <fa-icon [icon]="sortParams.asc ? icons.faArrowDown : icons.faArrowUp" size="xs" class="ms-1"></fa-icon>
+          }
+        </span>
+        </a>
+      </li>
+    }
+  </ul>
+</div>

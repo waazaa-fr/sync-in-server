@@ -1,0 +1,49 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<aside [class.control-sidebar-open]="visible" class="control-sidebar control-sidebar-{{theme}}">
+  @for (tab of tabs; track tab.label) {
+    <div class="{{tab.active ? 'd-block' : 'd-none'}}">
+      @if (tab.title) {
+        <div class="sidebar-title">
+          <div l10nTranslate>{{ tab.title }}</div>
+        </div>
+      }
+      @if (showComponents || tab.loadComponent) {
+        @for (component of tab.components; track component.name) {
+          @if (tab.active || tab.loadComponent) {
+            <div class="sidebar-component-content">
+              <ng-container *ngComponentOutlet="component"></ng-container>
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+</aside>
+<div class="control-sidebar-menu">
+  <div class="sidebar-apps-icons">
+    <div class="menu">
+      @if (!networkIsOnline) {
+        <a class="bg-warning">
+          <fa-icon [icon]="icons.faWifi" class="text-white"></fa-icon>
+        </a>
+      }
+      @for (tab of tabs; track tab.label) {
+        @if (tab.icon && (!tab.showOnCount || tab.showOnCount && tab.count && (tab.count.value | async))) {
+          <a [class.mt-auto]="tab.firstOfLasts" [class.active]="visible && tab.active" (click)="setTabVisible(tab.label)">
+            <fa-icon [icon]="tab.icon"></fa-icon>
+            @if (tab.count && tab.count.value | async; as count) {
+              <span class="menu-badge">
+                <span class="badge bg-{{tab.count.level}} rounded-pill">{{ count }}</span>
+              </span>
+            }
+          </a>
+        }
+      }
+    </div>
+  </div>
+</div>

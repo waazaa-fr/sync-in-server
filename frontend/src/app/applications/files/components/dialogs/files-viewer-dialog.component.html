@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header">
+  <h4 class="modal-title">
+    <i class="fas fa-eye"></i>
+    <span>{{ currentFile.name }}</span>
+  </h4>
+  <button (click)="onMinimize()" aria-label="Minimize" class="btn-minimize btn-minimize-white" type="button"></button>
+  <button (click)="onClose()" aria-label="Close" class="btn-close btn-close-white ms-3" type="button"></button>
+</div>
+@if (canAccess && currentFile) {
+  <div class="modal-body">
+    @switch (currentFile.shortMime) {
+      @case ('image') {
+        <div class="d-flex justify-content-center bg-black">
+          <img [src]="currentFile.dataUrl" [style.height.px]="currentHeight" alt="" class="img-fluid align-self-center">
+        </div>
+      }
+      @case ('pdf') {
+        <app-files-viewer-pdf [currentHeight]="currentHeight" [fileUrl]="currentFile.dataUrl"></app-files-viewer-pdf>
+      }
+      @case ('media') {
+        <app-files-viewer-media [currentHeight]="currentHeight" [fileUrl]="currentFile.dataUrl"></app-files-viewer-media>
+      }
+      @case ('document') {
+        <app-files-viewer-document [currentHeight]="currentHeight" [file]="currentFile" [mode]="mode"></app-files-viewer-document>
+      }
+      @case ('html') {
+        <app-files-viewer-html [currentHeight]="currentHeight" [fileUrl]="currentFile.dataUrl"></app-files-viewer-html>
+      }
+      @default {
+        <app-files-viewer-text [currentHeight]="currentHeight" [file]="currentFile"></app-files-viewer-text>
+      }
+    }
+  </div>
+}

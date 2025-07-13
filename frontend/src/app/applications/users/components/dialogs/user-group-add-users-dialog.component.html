@@ -1,0 +1,33 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<div class="modal-header align-items-center">
+  <h4 class="modal-title">
+    <fa-icon [icon]="icons.faUserPlus" class="me-2"></fa-icon>
+    <span>{{ parentGroup.name }}</span>
+  </h4>
+  <h4 class="modal-title ms-auto">
+    <span l10nTranslate>Add members</span>
+  </h4>
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white ms-2" type="button"></button>
+</div>
+<div class="modal-body">
+  <app-user-search
+    [(members)]="newMembers"
+    [withPermissions]="false"
+    [customPlaceholder]="'Type to search for users to add'"
+    [searchFunction]="searchMembers.bind(this)">
+  </app-user-search>
+</div>
+<div class="modal-footer">
+  <button (click)="layout.closeDialog()" class="btn btn-sm btn-secondary ms-auto" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()"
+          [disabled]="submitted || !newMembers.length" class="btn btn-sm btn-primary"
+          type="button"
+          l10nTranslate>
+    Confirm
+  </button>
+</div>

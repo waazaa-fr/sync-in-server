@@ -1,0 +1,29 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+
+<header class="main-header">
+  <nav class="navbar navbar-content">
+    <a (click)="navigateTo('back')" class="d-sm-none navbar-button" role="button">
+      <fa-icon [icon]="icons.faAngleLeft"></fa-icon>
+    </a>
+    <a (click)="navigateTo('next')" class="d-sm-none navbar-button" role="button">
+      <fa-icon [icon]="icons.faAngleRight"></fa-icon>
+    </a>
+    <div class="navbar-breadcrumb">
+      <app-breadcrumb></app-breadcrumb>
+    </div>
+    <div class="navbar-right-side">
+      <div (click)="openSidebarUser()" class="menu">
+        <div class="avatar">
+          @if (userAvatar) {
+            <img class="avatar-img bg-gray-light-important" [src]="userAvatar" [width]="28" [height]="28" alt="">
+          }
+          <span class="avatar-{{allOnlineStatus[user?.onlineStatus]}}"></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

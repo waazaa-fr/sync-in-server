@@ -1,0 +1,130 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.control-sidebar {
+  top: 0;
+  right: -$control-sidebar-width;
+  width: $control-sidebar-width;
+  position: fixed;
+  height: 100%;
+  margin-top: $navbar-height;
+  z-index: $control-sidebar-menu-z-index;
+  transform: translate3d(0, 0, 0);
+  transition: right $transition-speed $transition-fn;
+
+  //Open state with slide over content effect
+  &.control-sidebar-open {
+    right: $control-sidebar-menu-width;
+  }
+
+  @include media-breakpoint-down(sm) {
+    right: -$control-sidebar-small-width;
+    width: $control-sidebar-small-width;
+
+    &.control-sidebar-open {
+      border-left: none !important;
+    }
+  }
+
+  .sidebar-title, .sidebar-component-title {
+    @extend .no-select;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: $sidebar-apps-height;
+    font-size: $font-size-xs;
+    padding: .3rem;
+  }
+
+  .sidebar-component-title {
+    > span {
+      margin-right: auto;
+      margin-left: auto;
+    }
+  }
+
+  .sidebar-item {
+    .sidebar-item-container {
+      display: flex;
+      cursor: pointer;
+
+      .sidebar-item-content {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: $sidebar-apps-height;
+        padding: .2rem .4rem .2rem .4rem;
+        border-bottom: .5px solid transparent;
+      }
+    }
+  }
+}
+
+//Control Sidebar Menu
+.control-sidebar-menu {
+  display: flex;
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding-top: $navbar-height;
+  width: $control-sidebar-menu-width;
+  height: 100%;
+  z-index: $control-sidebar-menu-z-index;
+
+  .sidebar-apps-icons {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    height: 100%;
+    width: $control-sidebar-menu-width;
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      width: $control-sidebar-menu-width;
+
+      > a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: $sidebar-apps-height;
+        width: 100%;
+        cursor: pointer;
+
+        > i {
+          font-size: 1rem;
+        }
+
+        .menu-badge {
+          position: absolute;
+          font-size: .65rem;
+          width: $control-sidebar-menu-width;
+
+          .badge {
+            position: absolute;
+            right: 3px;
+            bottom: 1px;
+          }
+        }
+      }
+    }
+  }
+}
+
+//Open without slide over content
+//.control-sidebar-open {
+//  .control-sidebar {
+//    right: $control-sidebar-menu-width;
+//  }
+//
+//  @include media-breakpoint-up(lg) {
+//    .content-wrapper {
+//      margin-right: $control-sidebar-width + $control-sidebar-menu-width;
+//    }
+//  }
+//}

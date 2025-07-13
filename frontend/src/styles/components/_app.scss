@@ -1,0 +1,369 @@
+/*!
+ * Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+ * This file is part of Sync-in | The open source file sync and share solution
+ * See the LICENSE file for licensing details
+ */
+
+.app-auth {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  background: $application_background;
+
+  .background {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2rem 5rem 2rem 5rem;
+    border-radius: 8px;
+
+    .content {
+      display: flex;
+      flex-direction: column;
+
+      .header {
+        margin-bottom: 1rem;
+      }
+
+      .body {
+        .input-group-text {
+          background: rgba(0, 0, 0, 0.3);
+          color: rgba(255, 255, 255, 0.8);
+          border: .5px solid lighten(#202a2f, 5%);
+        }
+
+        .form-control {
+          background: rgba(0, 0, 0, 0.3);
+          border: .5px solid lighten(#202a2f, 5%);
+          color: whitesmoke;
+
+          &::placeholder {
+            font-size: .8rem;
+            color: $placeholder-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+.app-title {
+  &:before {
+    content: $application_title;
+  }
+
+  content: $application_title;
+}
+
+.app-loading {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: $application_background;
+  color: white;
+
+  &:after {
+    content: "#{$application_title}";
+  }
+}
+
+.app-thumbs {
+  @extend .container-fluid;
+  padding-top: .4rem;
+  margin-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+
+  .row {
+    margin-right: 0.4rem;
+    margin-left: 0.4rem;
+    font-size: $font-size-xs;
+
+    .card {
+      margin-right: 0.2rem;
+      margin-bottom: 0.2rem;
+      border-width: .5px;
+      border-color: transparent;
+
+      &.selected {
+        background-color: transparent;
+
+        .card-footer {
+          background-color: transparent;
+        }
+      }
+
+      &.deleted {
+        opacity: 0.3;
+      }
+
+      &.disabled {
+        opacity: 0.5;
+      }
+
+      .card-body {
+        display: flex;
+        align-items: center;
+        align-self: center;
+        border-top-left-radius: $border-radius-base;
+        border-top-right-radius: $border-radius-base;
+        padding: 0.3rem;
+
+        .label-bottom-right {
+          display: flex;
+          flex-direction: column;
+          font-style: normal;
+          font-weight: 500;
+          position: absolute;
+          bottom: 28px;
+          right: .2rem;
+
+          > span {
+            margin-top: 0.15rem;
+          }
+        }
+
+        .label-bottom-left {
+          font-style: normal;
+          font-weight: 500;
+          position: absolute;
+          bottom: 28px;
+          left: .2rem;
+        }
+
+        .label-top-right {
+          font-style: normal;
+          font-weight: 500;
+          position: absolute;
+          top: .2rem;
+          right: .2rem;
+        }
+
+        .label-top-left {
+          font-style: normal;
+          font-weight: 500;
+          position: absolute;
+          top: .2rem;
+          left: .2rem;
+        }
+      }
+
+      .card-footer {
+        background-color: transparent;
+        border-top: .5px solid;
+      }
+    }
+  }
+}
+
+.app-table {
+  @extend .table;
+  @extend .no-select;
+  table-layout: fixed;
+  width: 100%;
+  background-color: transparent;
+  color: transparent;
+  font-size: $font-size-xs;
+  margin-bottom: 0;
+
+  thead {
+    background-color: transparent;
+    font-size: $font-size-xxs;
+    line-height: 16.5px;
+
+    tr {
+      th {
+        white-space: nowrap;
+        font-weight: 400;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-bottom: .5px solid;
+        padding: .25rem 0.5rem;
+
+        &:last-child {
+          border-right: .5px solid;
+        }
+      }
+    }
+  }
+
+  tbody tr {
+    height: 35px !important;
+    border-bottom: .5px solid;
+
+    &:hover {
+      background-color: transparent;
+    }
+
+    &.selected {
+      background-color: transparent;
+    }
+
+    &.deleted {
+      opacity: 0.3;
+    }
+
+    &.disabled {
+      opacity: 0.5;
+    }
+  }
+
+  tbody tr td {
+    @extend .text-truncate;
+    border: none !important;
+    vertical-align: middle;
+    max-width: 0;
+    padding-bottom: 1px;
+    padding-top: 1px;
+
+    span {
+      @extend .text-truncate;
+    }
+  }
+
+  tbody td:first-child {
+    img, fa-icon {
+      margin-right: 0.3rem;
+    }
+  }
+
+  tbody td:not(:first-child) {
+    color: transparent;
+    font-size: $font-size-xxxxs;
+    border-top: none;
+
+    .badge {
+      font-size: $font-size-xxs;
+      display: inline;
+      line-height: normal;
+    }
+  }
+}
+
+.app-table-striped {
+  @extend .app-table;
+  user-select: auto !important;
+  cursor: auto !important;
+}
+
+.app-top-menu {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: center;
+  flex: 1 1 auto !important;
+  padding: 5px;
+  border-top: .5px solid;
+  border-bottom: .5px solid;
+  height: $sidebar-apps-icons-height;
+
+  .btn {
+    height: 30px;
+    min-width: 36px;
+
+    > fa-icon {
+      font-size: $font-size-md;
+    }
+
+    span {
+      font-size: $font-size-xs;
+
+      fa-icon {
+        font-size: $font-size-md;
+        margin-right: 0.2rem;
+      }
+    }
+  }
+
+  .dropdown-menu {
+    margin: 1px;
+
+    .dropdown-item {
+      &.disabled {
+        opacity: 0.4;
+      }
+
+      span {
+        display: flex;
+        align-items: center;
+
+        fa-icon {
+          margin-right: 0.4rem;
+          font-size: $font-size-md;
+        }
+      }
+    }
+  }
+}
+
+.app-foot-menu {
+  @extend .no-select;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  font-size: $font-size-xxs;
+  height: 25px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: transparent;
+  color: transparent;
+
+  &.pagination-container {
+    height: 40px;
+  }
+}
+
+.app-div-striped {
+  &:nth-of-type(even) {
+    background-color: transparent;
+  }
+
+  &.selected {
+    background-color: transparent;
+  }
+}
+
+.app-div-striped-inverse {
+  &:nth-of-type(odd) {
+    background-color: transparent;
+  }
+}
+
+.app-div-hovered {
+  &:hover {
+    background-color: transparent;
+  }
+
+  &.selected {
+    background-color: transparent;
+  }
+}
+
+.app-onlines-content {
+  display: flex;
+  padding: .4rem;
+  @extend .app-div-hovered;
+  @extend .no-select-pointer;
+  height: $sidebar-apps-height;
+}
+
+.app-viewer-iframe {
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+.app-comment {
+  textarea {
+    padding: .15rem .3rem;
+  }
+}

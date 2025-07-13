@@ -1,0 +1,125 @@
+<!--
+  ~ Copyright (C) 2012-2025 Johan Legrand <johan.legrand@sync-in.com>
+  ~ This file is part of Sync-in | The open source file sync and share solution
+  ~ See the LICENSE file for licensing details
+  -->
+<div class="modal-header align-items-center">
+  <h4 class="modal-title">
+    @if (group) {
+      <fa-icon [icon]="icons.faPen" class="me-2"></fa-icon>
+      <span>{{ group.name }}</span>
+    } @else {
+      <fa-icon [icon]="icons.faPlus" class="me-2"></fa-icon>
+      <span l10nTranslate>New group</span>
+    }
+  </h4>
+  @if (group) {
+    <h4 class="modal-title ms-auto">
+      <span l10nTranslate>Edit group</span>
+    </h4>
+  }
+  <button (click)="layout.closeDialog()" aria-label="Close" class="btn-close btn-close-white {{group ? 'ms-2' : 'ms-auto'}} ms-2" type="button"></button>
+</div>
+<div class="modal-body form-validation" [formGroup]="groupForm">
+  <tabset [justified]="true" type="pills">
+    <hr class="my-3">
+    <tab (selectTab)="tabView=null" customClass="tab-dialog form-validation">
+      <ng-template tabHeading>
+        <fa-icon [icon]="icons.faCog"></fa-icon>
+        <span class="ms-2" l10nTranslate>Settings</span>
+      </ng-template>
+      <div class="d-flex flex-column">
+        <div class="d-flex col-12 pb-3">
+          <div class="flex-fill col-6 pe-4">
+            <label for="name" l10nTranslate>Name</label>
+            <input id="name"
+                   appAutofocus
+                   [autoSelect]="false"
+                   formControlName="name"
+                   [class.is-invalid]="groupForm.controls.name.invalid"
+                   class="form-control form-control-sm"
+                   autocomplete="off"
+                   type="text">
+          </div>
+          <div class="flex-fill col-6 ps-4">
+            <label for="description" l10nTranslate>Description</label>
+            <input id="description"
+                   formControlName="description"
+                   class="form-control form-control-sm"
+                   autocomplete="off"
+                   type="text">
+          </div>
+        </div>
+        <div class="d-flex flex-column align-items-start col-12 pb-3">
+          <div class="col-6 pe-4">
+            <label for="visibility" l10nTranslate>Visibility</label>
+            <select id="visibility"
+                    formControlName="visibility"
+                    class="form-control form-select form-select-sm">
+              @for (v of allVisibilities | keyvalue: originalOrderKeyValue; track v.value) {
+                <option [ngValue]="v.value" l10nTranslate>{{ v.key }}</option>
+              }
+            </select>
+          </div>
+          <div class="d-none d-sm-block fst-italic fs-xxs">
+            @switch (groupForm.value.visibility) {
+              @case (allVisibilities.Visible) {
+                <span l10nTranslate>All users can see this group.</span>
+              }
+              @case (allVisibilities.Private) {
+                <span l10nTranslate>Users who are not members of this group cannot see it.</span>
+              }
+              @case (allVisibilities.Isolated) {
+                <span l10nTranslate>The group is not visible, its members cannot see it and cannot see each other.</span>
+              }
+            }
+          </div>
+        </div>
+        <div class="d-flex align-items-start col-12 pb-3">
+          <div class="col-6 pe-4">
+            <label for="parent" translate>Parent group</label>
+            <app-select id="parent"
+                        [searchFunction]="searchGroups.bind(this)"
+                        (data)="onSetParent($event)"
+                        [active]="groupForm.value.parent"
+                        [itemIcon]="icons.GROUPS"
+                        [placeholder]="'Select the parent group' | translate:locale.language">
+            </app-select>
+          </div>
+        </div>
+        @if (group) {
+          <div class="d-flex align-items-start col-12 pb-3">
+            <div class="col-6 pe-4">
+              <label for="created" l10nTranslate>Creation date</label>
+              <div id="created">{{ group.createdAt | amDateFormat }}</div>
+            </div>
+            <div class="d-flex flex-column align-items-end col-6 ps-4">
+              <label for="modified" l10nTranslate>Modification date</label>
+              <div id="modified">{{ group.modifiedAt | amDateFormat }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </tab>
+    <tab (selectTab)="tabView='permissions'" customClass="tab-dialog form-validation">
+      <ng-template tabHeading>
+        <fa-icon [icon]="icons.faShieldHalved"></fa-icon>
+        <span class="ms-2" l10nTranslate>Permissions</span>
+      </ng-template>
+      <div class="d-flex flex-column">
+        <div class="d-flex col-12 pb-3">
+          <app-admin-permissions [permissions]="groupForm.value.applications" (permissionsChange)="updateApplications($event)"></app-admin-permissions>
+        </div>
+      </div>
+    </tab>
+  </tabset>
+</div>
+<div class="modal-footer">
+  <button (click)="layout.closeDialog()" class="btn btn-sm btn-secondary ms-auto" data-dismiss="modal" type="button" l10nTranslate>Cancel</button>
+  <button (click)="onSubmit()"
+          [disabled]="submitted || groupForm.invalid" class="btn btn-sm btn-primary"
+          type="button"
+          l10nTranslate>
+    Confirm
+  </button>
+</div>

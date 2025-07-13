@@ -1,0 +1,89 @@
+server:
+  host: 0.0.0.0
+  port: 3000
+  # workers: auto (use all cpus) | number
+  # regardless of the value, starts with at least 2 workers, 1 worker is dedicated to scheduled tasks
+  workers: 4
+  # trust proxy: true | false | 127.0.0.1,192.168.1.1/24
+  trustProxy: false
+  # restartOnFailure : automatically restart workers if they are killed or die
+  restartOnFailure: true
+logger:
+  # level: trace | debug | info | warn | error | fatal
+  level: trace
+  # stdout : if false logs are written to the run directory (default: true)
+  stdout: true
+mysql:
+  url: mysql://user:password@localhost:3306/database
+  logQueries: false
+cache:
+  # adapter: mysql (default) | redis (requires optional dependency: redis)
+  adapter: mysql
+  # default ttl in seconds
+  ttl: 60
+  # redis adapter url
+  redis: redis://127.0.0.1:6379
+websocket:
+  # adapter: cluster (Node.js Workers: default) | redis (requires optional dependency: @socket.io/redis-adapter)
+  adapter: cluster
+  # cors origin allowed
+  corsOrigin: '*'
+  # redis adapter url
+  redis: redis://127.0.0.1:6379
+mail:
+  host: smtp.server.com
+  port: 587
+  sender: 'Sync-in<notification@sync-in.com>'
+  auth:
+    user: user
+    pass: password
+  # secure: defines if the connection should use SSL (if true) or not (if false)
+  secure: false
+  # enable logger
+  logger: false
+  # set log level to debug
+  debug: false
+auth:
+  # adapter : mysql (default) | ldap
+  method: mysql
+  # sameSite (cookie settings) : lax | strict
+  sameSite: strict
+  token:
+    access:
+      name: sync-in-access
+      # used for token & cookie signatures
+      secret: changeAccessWithStrongSecret
+      expiration: 30m
+      cookieMaxAge: 30m
+    refresh:
+      name: sync-in-refresh
+      # used for token & cookie signatures
+      secret: changeRefreshWithStrongSecret
+      expiration: 4h
+      cookieMaxAge: 4h
+  ldap:
+    # e.g: [ldap://localhost:389, ldaps://localhost:636] (array required)
+    servers: []
+    # baseDN: distinguished name, e.g: (ou=people,dc=ldap,dc=sync-in,dc=com)
+    baseDN:
+    # filter, e.g: (acl=admin)
+    filter:
+    # login attribute: uid (default) or mail
+    loginAttribute:
+applications:
+  files:
+    dataPath: /home/sync-in
+    # Default to 5 GB if not specified
+    maxUploadSize: 5368709120
+    onlyoffice:
+      enabled: false
+      # for an external server (e.g: https://onlyoffice.domain.com), remember the url must be accessible from browser !
+      # if externalServer is empty (case of official docker compose), we use the local instance
+      externalServer:
+      # secret used for jwt tokens, it must be the same on the onlyoffice server
+      secret: onlyOfficeSecret
+      # if you use https, set to true
+      verifySSL: false
+  appStore:
+    # repository: public (default) | local
+    repository: public
