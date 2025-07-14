@@ -90,7 +90,7 @@ export class SyncWizardClientComponent {
   }
 
   onSelect() {
-    this.syncService.showOpenDialog({ properties: [ELECTRON_DIALOG.DIRECTORY], defaultPath: '' }).then((ev) => {
+    this.syncService.showOpenDialog({ properties: [ELECTRON_DIALOG.DIRECTORY, ELECTRON_DIALOG.CREATE_DIRECTORY], defaultPath: '' }).then((ev) => {
       if (!ev.canceled) {
         this.syncService.wizard.localPath = {
           name: ev.filePaths[0].split('\\').pop().split('/').pop(),

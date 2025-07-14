@@ -6,5 +6,6 @@
 
 export enum ELECTRON_DIALOG {
   FILE = 'openFile',
-  DIRECTORY = 'openDirectory'
+  DIRECTORY = 'openDirectory',
+  CREATE_DIRECTORY = 'createDirectory'
 }
