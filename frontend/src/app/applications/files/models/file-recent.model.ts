@@ -8,7 +8,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import type { FileRecent } from '@sync-in-server/backend/src/applications/files/schemas/file-recent.interface'
 import { SPACE_ALIAS, SPACE_REPOSITORY } from '@sync-in-server/backend/src/applications/spaces/constants/spaces'
 import { SPACES_ICON } from '../../spaces/spaces.constants'
-import { getAssetsMimeUrl } from '../files.constants'
+import { defaultMimeUrl, getAssetsMimeUrl } from '../files.constants'
 
 export class FileRecentModel implements FileRecent {
   id: number
@@ -37,5 +37,9 @@ export class FileRecentModel implements FileRecent {
       .slice(this.path.split('/')[1] === SPACE_ALIAS.PERSONAL ? 2 : 1)
       .join('/')
     this.inTrash = this.path.split('/')[0] === SPACE_REPOSITORY.TRASH
+  }
+
+  fallBackMimeUrl() {
+    this.mimeUrl = defaultMimeUrl
   }
 }

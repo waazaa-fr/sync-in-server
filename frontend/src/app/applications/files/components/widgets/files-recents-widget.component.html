@@ -19,7 +19,7 @@
       <ul class="products-list product-list-in-box" [class.border-0]="last">
         <li (click)="goToFile(f)" class="item">
           <div class="product-img">
-            <img [src]="f.mimeUrl" alt="">
+            <img [src]="f.mimeUrl" alt="" (error)="f.fallBackMimeUrl()">
           </div>
           <div class="product-info">
           <span class="product-title">
