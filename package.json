@@ -1,9 +1,17 @@
 {
   "name": "sync-in-server",
-  "description": "Sync-in Server",
+  "description": "The secure, open-source platform for file storage, sharing, collaboration, and sync",
   "author": {
     "name": "Johan Legrand",
     "email": "johan.legrand@sync-in.com"
+  },
+  "homepage": "https://github.com/Sync-in/server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sync-in/server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sync-in/server/issues"
   },
   "license": "AGPL-3.0-or-later",
   "version": "1.0.0",
