@@ -26,6 +26,7 @@
   ],
   "scripts": {
     "build": "npm run build -ws",
+    "build:release": "npm run build && node scripts/build/release.mjs",
     "lint": "npm run lint -ws",
     "start": "node dist/server/main.js",
     "reset": "rm -Rf frontend/node_modules frontend/.angular backend/node_modules node_modules; npm cache clean --force",
