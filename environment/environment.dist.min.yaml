@@ -1,0 +1,11 @@
+mysql:
+  url: mysql://user:MySQLRootPassword@localhost:3306/database
+auth:
+  token:
+    access:
+      secret: changeAccessWithStrongSecret
+    refresh:
+      secret: changeRefreshWithStrongSecret
+applications:
+  files:
+    dataPath: /home/sync-in/data
