@@ -1,6 +1,8 @@
 server:
+  # default host : 0.0.0.0
   host: 0.0.0.0
-  port: 3000
+  # default port : 8080
+  port: 8080
   # workers: auto (use all cpus) | number
   # regardless of the value, starts with at least 2 workers, 1 worker is dedicated to scheduled tasks
   workers: 4
@@ -13,6 +15,8 @@ logger:
   level: trace
   # stdout : if false logs are written to the run directory (default: true)
   stdout: true
+  # colorize output
+  colorize: true
 mysql:
   url: mysql://user:MySQLRootPassword@localhost:3306/database
   logQueries: false

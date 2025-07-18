@@ -22,7 +22,7 @@ export class ServerConfig {
   @IsInt()
   @Min(1024)
   @Max(65535)
-  port: number = 3000
+  port: number = 8080
 
   @Transform(({ value }) => (value === 0 || value === 'auto' ? cpus().length : Math.max(Number(value), 2)))
   @IsInt()
@@ -43,6 +43,9 @@ export class LoggerConfig {
 
   @IsBoolean()
   stdout: boolean = true
+
+  @IsBoolean()
+  colorize: boolean = true
 }
 
 export class Configuration {

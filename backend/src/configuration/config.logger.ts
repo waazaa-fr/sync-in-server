@@ -6,7 +6,7 @@
 
 import { join } from 'node:path'
 import type { Options } from 'pino-http'
-import { APP_RUN_PATH } from './config.constants'
+import { APP_LOGS_PATH } from './config.constants'
 import type { LoggerConfig } from './config.validation'
 
 export const configLogger = (loggerConfig: LoggerConfig) =>
@@ -53,13 +53,13 @@ export const configLogger = (loggerConfig: LoggerConfig) =>
         ignore: 'hostname,context,reqId,req,res,user,userAgent,responseTime',
         hideObject: false,
         singleLine: false,
-        colorize: loggerConfig.stdout,
+        colorize: loggerConfig.colorize,
         colorizeObjects: false,
         translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
         messageFormat: `[{context}]{if user} <{user}> {end} ${
-          loggerConfig.stdout ? '\x1b[37m' : ''
+          loggerConfig.colorize ? '\x1b[37m' : ''
         }{msg}{if res} ({res.contentLength} bytes in {responseTime}ms) {userAgent}{end}{if reqId} | {reqId}{end}`,
-        destination: loggerConfig.stdout ? 1 : join(APP_RUN_PATH, 'app.log'),
+        destination: loggerConfig.stdout ? 1 : join(APP_LOGS_PATH, 'server.log'),
         mkdir: true,
         sync: false
       }
