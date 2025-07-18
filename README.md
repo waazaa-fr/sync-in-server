@@ -24,7 +24,7 @@ Sync-in fits seamlessly into any environment — from small teams to large enter
 
 <picture>
   <source srcset="https://raw.githubusercontent.com/Sync-in/assets/main/server-dark.png" media="(prefers-color-scheme: dark)" />
-  <img src="https://raw.githubusercontent.com/Sync-in/assets/main/server.png" alt="Sync-in" style="max-height: 500px"/>
+  <img src="https://raw.githubusercontent.com/Sync-in/assets/main/server.png" alt="Sync-in" width="600"/>
 </picture>
 
 ---
