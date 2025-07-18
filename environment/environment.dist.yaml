@@ -14,7 +14,7 @@ logger:
   # stdout : if false logs are written to the run directory (default: true)
   stdout: true
 mysql:
-  url: mysql://user:password@localhost:3306/database
+  url: mysql://user:MySQLRootPassword@localhost:3306/database
   logQueries: false
 cache:
   # adapter: mysql (default) | redis (requires optional dependency: redis)

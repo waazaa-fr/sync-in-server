@@ -7,16 +7,16 @@
 import * as yaml from 'js-yaml'
 import fs from 'node:fs'
 import path from 'node:path'
-import { APP_RUN_PATH, ENVIRONMENT_FILE } from './config.constants'
+import { APP_LOGS_PATH, ENVIRONMENT_FILE_NAME, ENVIRONMENT_PATH } from './config.constants'
 
 export function configLoader(): any {
-  if (!fs.existsSync(APP_RUN_PATH)) {
-    fs.mkdirSync(APP_RUN_PATH, { recursive: true })
+  if (!fs.existsSync(APP_LOGS_PATH)) {
+    fs.mkdirSync(APP_LOGS_PATH, { recursive: true })
   }
-  for (const envPath of [path.join(__dirname, `../../../${ENVIRONMENT_FILE}`), `./${ENVIRONMENT_FILE}`]) {
+  for (const envPath of [path.join(__dirname, `../../../${ENVIRONMENT_PATH}`), `./${ENVIRONMENT_PATH}`, ENVIRONMENT_FILE_NAME]) {
     if (fs.existsSync(envPath) && fs.lstatSync(envPath).isFile()) {
       return yaml.load(fs.readFileSync(envPath, 'utf8'))
     }
   }
-  throw new Error(`${ENVIRONMENT_FILE} not found`)
+  throw new Error(`${ENVIRONMENT_FILE_NAME} not found`)
 }

@@ -1,7 +1,6 @@
 {
   "productName": "Sync-in",
   "name": "@sync-in-server/frontend",
-  "description": "The open source file sync and share solution",
   "author": {
     "name": "Johan Legrand",
     "email": "johan.legrand@sync-in.com"

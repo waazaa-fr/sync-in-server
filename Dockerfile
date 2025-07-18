@@ -19,7 +19,7 @@ COPY --from=build --chown=syncin:syncin build/dist/ .
 COPY --from=build --chown=syncin:syncin build/node_modules ./node_modules
 COPY --from=build --chown=syncin:syncin build/backend/migrations ./migrations
 COPY --from=build --chown=syncin:syncin build/environment/environment.dist.yaml ./environment/environment.dist.yaml
-COPY --from=build --chown=syncin:syncin build/scripts/sync-in-server.sh ./sync-in-server.sh
+COPY --from=build --chown=syncin:syncin build/scripts/docker-sync-in-server.sh ./sync-in-server.sh
 ENV NODE_ENV=production
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 EXPOSE 3000

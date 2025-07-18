@@ -5,9 +5,9 @@
  */
 
 import path from 'node:path'
-import { IS_PROD_ENV } from '../../configuration/config.constants'
+import { IS_DEV_ENV } from '../../configuration/config.constants'
 
 export const DB_CHARSET = 'utf8mb4'
 export const DB_TOKEN_PROVIDER = 'DB'
-export const SCHEMA_PATH = path.join(__dirname, `./schema${IS_PROD_ENV ? '.js' : '.ts'}`)
+export const SCHEMA_PATH = path.join(__dirname, `./schema${IS_DEV_ENV ? '.ts' : '.js'}`)
 export const MIGRATIONS_PATH = './migrations'

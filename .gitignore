@@ -1,10 +1,11 @@
 node_modules
-run
+logs
 .run
 dist
 .idea
 .DS_Store
 backend/coverage
+backend/logs
 environment/environment.yaml
 frontend/static
 frontend/.angular/

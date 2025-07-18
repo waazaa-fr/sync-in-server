@@ -3,7 +3,6 @@
   "productName": "Sync-in",
   "version": "1.0.0",
   "private": true,
-  "description": "The open source file sync and share solution",
   "license": "AGPL-3.0-or-later",
   "author": {
     "name": "Johan Legrand",
