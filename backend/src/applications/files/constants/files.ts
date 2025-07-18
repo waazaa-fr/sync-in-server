@@ -4,7 +4,7 @@
  * See the LICENSE file for licensing details
  */
 
-export const DEFAULT_HIGH_WATER_MARK = 512 * 1024
+export const DEFAULT_HIGH_WATER_MARK = 1024 * 1024
 export const DEFAULT_MIME_TYPE = 'application/octet-stream'
 export const DEFAULT_FILTERS = new Set([
   '.DS_Store',
