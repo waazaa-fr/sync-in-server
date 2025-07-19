@@ -1,8 +1,10 @@
+.github
 .idea
 .run
-backend/node_modules
-backend/run
 dist
+sync-in-server*
+backend/logs
+backend/node_modules
 frontend/node_modules
 frontend/.angular
 node_modules
