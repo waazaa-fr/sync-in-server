@@ -1,0 +1,31 @@
+name: release.yml
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build release artifacts via NPM
+        run: npm run release:build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            sync-in-server.zip
+            sync-in-server.tar.gz
