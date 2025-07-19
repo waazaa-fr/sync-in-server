@@ -1,6 +1,6 @@
 {
   "name": "sync-in-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The secure, open-source platform for file storage, sharing, collaboration, and sync",
   "author": {
     "name": "Johan Legrand",
@@ -40,5 +40,8 @@
   "devDependencies": {
     "commit-and-tag-version": "^12.5.1",
     "prettier": "^3.4.1"
+  },
+  "commit-and-tag-version": {
+    "header": ""
   }
 }
