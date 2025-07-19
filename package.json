@@ -1,5 +1,6 @@
 {
   "name": "sync-in-server",
+  "version": "1.0.0",
   "description": "The secure, open-source platform for file storage, sharing, collaboration, and sync",
   "author": {
     "name": "Johan Legrand",
@@ -14,7 +15,6 @@
     "url": "https://github.com/Sync-in/server/issues"
   },
   "license": "AGPL-3.0-or-later",
-  "version": "1.0.0",
   "private": true,
   "engineStrict": true,
   "engines": {
@@ -26,7 +26,10 @@
   ],
   "scripts": {
     "build": "npm run build -ws",
-    "build:release": "npm run build && node scripts/build/release.mjs",
+    "release:build": "npm run build && node scripts/build/release.mjs",
+    "release:clean": "rm -rf $npm_package_name*",
+    "release:bump": "commit-and-tag-version",
+    "release:bump:dry": "npm run release:bump -- --dry-run",
     "lint": "npm run lint -ws",
     "start": "node dist/server/main.js",
     "reset": "rm -Rf frontend/node_modules frontend/.angular backend/node_modules node_modules; npm cache clean --force",
@@ -35,6 +38,7 @@
     "docker:start": "docker run --name sync-in -it --rm -e SKIP_INIT=true -p 3000:3000 -v ./environment/environment.yaml:/app/environment/environment.yaml $npm_package_name"
   },
   "devDependencies": {
+    "commit-and-tag-version": "^12.5.1",
     "prettier": "^3.4.1"
   }
 }

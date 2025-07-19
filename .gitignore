@@ -4,6 +4,7 @@ logs
 dist
 .idea
 .DS_Store
+sync-in-server*
 backend/coverage
 backend/logs
 environment/environment.yaml

@@ -7,13 +7,15 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { exec } from 'child_process'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const extraFiles = ['LICENSE', 'README.md']
+const extraFiles = ['LICENSE']
 const environmentFiles = ['environment.dist.min.yaml', 'environment.dist.yaml']
 const environmentDir = 'environment'
+const releaseName = 'sync-in-server'
 
 const rootDir = path.resolve(__dirname, '../..')
 
@@ -21,6 +23,7 @@ const rootPKGPath = path.join(rootDir, 'package.json')
 const backendPKGPath = path.join(rootDir, 'backend', 'package.json')
 const distDirName = 'dist'
 const distDir = path.join(rootDir, distDirName)
+const releaseDir = path.join(rootDir, releaseName)
 const distPKGPath = path.join(distDir, 'package.json')
 
 if (!fs.existsSync(distDir)) {
@@ -28,12 +31,21 @@ if (!fs.existsSync(distDir)) {
   process.exit(1)
 }
 
+if (fs.existsSync(releaseDir)) {
+  try {
+    await fs.promises.rm(releaseDir, { recursive: true, force: true })
+    console.log(`✅ dir removed : ${releaseName}`)
+  } catch (e) {
+    console.error(`❌ unable to remove dir ${releaseName} : ${e}`)
+  }
+}
+
 const [rootPkgRaw, backendPkgRaw] = await Promise.all([fs.promises.readFile(rootPKGPath, 'utf8'), fs.promises.readFile(backendPKGPath, 'utf8')])
 const rootPkg = JSON.parse(rootPkgRaw)
 const backendPkg = JSON.parse(backendPkgRaw)
 
 const releasePKG = {
-  name: '@sync-in/server',
+  name: rootPkg.name,
   version: rootPkg.version,
   description: rootPkg.description,
   author: rootPkg.author,
@@ -47,7 +59,7 @@ const releasePKG = {
     'sync-in-server': 'server/main.js'
   },
   scripts: {
-    init_env: 'cp node_modules/@sync-in/server/environment/environment.dist.min.yaml environment.yaml'
+    init_env: 'cp environment/environment.dist.min.yaml environment.yaml'
   },
   dependencies: backendPkg.dependencies,
   optionalDependencies: backendPkg.optionalDependencies
@@ -55,7 +67,7 @@ const releasePKG = {
 
 try {
   await fs.promises.writeFile(distPKGPath, JSON.stringify(releasePKG, null, 2))
-  console.log(`✅ ${path.relative(rootDir, distPKGPath)} generated successfully !`)
+  console.log(`✅ ${path.relative(rootDir, distPKGPath)} generated`)
 } catch (e) {
   console.error(`❌ ${path.relative(rootDir, distPKGPath)} not generated : ${e} !`)
   process.exit(1)
@@ -64,9 +76,9 @@ try {
 for (const f of extraFiles) {
   try {
     await fs.promises.copyFile(path.join(rootDir, f), path.join(distDir, f))
-    console.log(`✅ ${distDirName}/${f} copied successfully !`)
+    console.log(`✅ ${distDirName}/${f} copied`)
   } catch (e) {
-    console.log(`❌ ${distDirName}/${f} not copied : ${e}`)
+    console.error(`❌ ${distDirName}/${f} not copied : ${e}`)
     process.exit(1)
   }
 }
@@ -76,8 +88,28 @@ await fs.promises.mkdir(templatesPath, { recursive: true })
 for (const t of environmentFiles) {
   try {
     await fs.promises.copyFile(path.join(rootDir, environmentDir, t), path.join(templatesPath, t))
-    console.log(`✅ ${distDirName}/${environmentDir}/${t} copied successfully !`)
+    console.log(`✅ ${distDirName}/${environmentDir}/${t} copied`)
   } catch (e) {
-    console.log(`❌ ${distDirName}/${environmentDir}/${t} not copied : ${e}`)
+    console.error(`❌ ${distDirName}/${environmentDir}/${t} not copied : ${e}`)
+    process.exit(1)
   }
+}
+
+try {
+  await fs.promises.rename(distDir, releaseDir)
+  console.log(`✅ ${distDirName} renamed to ${releaseName}`)
+} catch (e) {
+  console.error(`❌ ${distDirName} not renamed to ${releaseName} : ${e}`)
+  process.exit(1)
+}
+
+try {
+  await Promise.all([
+    exec(`cd ${rootDir} && zip -r ${releaseName}.zip ${releaseName}`),
+    exec(`cd ${rootDir} && tar -czf ${releaseName}.tar.gz ${releaseName}`)
+  ])
+  console.log(`✅ ${releaseName}.zip & ${releaseName}.tar.gz created`)
+} catch (e) {
+  console.error(`❌ ${releaseName} was not archived : ${e}`)
+  process.exit(1)
 }
