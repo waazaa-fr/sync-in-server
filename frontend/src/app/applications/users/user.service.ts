@@ -87,6 +87,9 @@ export class UserService {
     this.store.userImpersonate.set(impersonate || user.impersonated)
     this.store.user.next(user)
     this.checkQuota(this.store.user.getValue())
+    if (impersonate) {
+      this.disconnectWebSocket()
+    }
     this.connectWebSocket()
   }
 

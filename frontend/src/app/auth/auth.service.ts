@@ -135,6 +135,7 @@ export class AuthService {
   logoutImpersonateUser() {
     this.http.post<LoginResponseDto>(API_ADMIN_IMPERSONATE_LOGOUT, null).subscribe({
       next: (r: LoginResponseDto) => {
+        this.userService.disconnectWebSocket()
         this.initUserFromResponse(r)
         this.router.navigate([USER_PATH.BASE, USER_PATH.ACCOUNT]).catch((e: Error) => console.error(e))
       },
