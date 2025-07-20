@@ -529,7 +529,7 @@ export class UsersQueries {
   async usersWhitelist(userId: number, lowerOrEqualUserRole: USER_ROLE = USER_ROLE.GUEST): Promise<number[]> {
     /* Get the list of user ids allowed to the current user
       - all users with no groups (except link users)
-      - all users who are members of the current user's groups (except link users)
+      - all users who are members of the current user's groups (excluding link users and members of isolated groups)
       - all guests managed by the current user
       - all managers who manage the current guest
     */
@@ -540,7 +540,10 @@ export class UsersQueries {
                        (SELECT ${groups.id},
                                ${groups.parentId}
                         FROM ${groups}
-                        WHERE (${groups.id} IN (SELECT ${usersGroups.groupId} FROM ${usersGroups} WHERE ${usersGroups.userId} = ${userId}))
+                        WHERE (${groups.id} IN (SELECT ${usersGroups.groupId}
+                                                FROM ${usersGroups}
+                                                WHERE ${usersGroups.userId} = ${userId}
+                                                  AND ${groups.visibility} != ${GROUP_VISIBILITY.ISOLATED}))
                         UNION
                         SELECT ${groupsAlias.id},
                                ${groupsAlias.parentId}
@@ -577,8 +580,8 @@ export class UsersQueries {
   @CacheDecorator(900)
   async groupsWhitelist(userId: number): Promise<number[]> {
     /* Get the list of groups ids allowed to the current user
-      - all groups for which the user is a member (including personal groups)
-      - all subgroups that are not hidden (from previous groups)
+      - all parent groups for which the user is a member (includes personal groups, excludes isolated groups)
+      - all subgroups inherited from parent groups
     */
     const groupsAlias: any = alias(groups, 'groupsAlias')
     const groupIds: any = sql`
@@ -587,7 +590,10 @@ export class UsersQueries {
                                ${groups.parentId},
                                ${groups.type}
                         FROM ${groups}
-                        WHERE (${groups.id} IN (SELECT ${usersGroups.groupId} FROM ${usersGroups} where ${usersGroups.userId} = ${userId}))
+                        WHERE (${groups.id} IN (SELECT ${usersGroups.groupId}
+                                                FROM ${usersGroups}
+                                                WHERE ${usersGroups.userId} = ${userId}
+                                                  AND ${groups.visibility} != ${GROUP_VISIBILITY.ISOLATED}))
                         UNION
                         SELECT ${groupsAlias.id},
                                ${groupsAlias.parentId},
