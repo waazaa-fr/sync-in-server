@@ -1,5 +1,5 @@
 
-## 1.1.0 (2025-07-19)
+## [1.1.0](https://github.com/Sync-in/server/compare/58a0124d40d59fc611656efb77af9ca4d5dcf52c...v1.1.0) (2025-07-19)
 
 
 ### Features

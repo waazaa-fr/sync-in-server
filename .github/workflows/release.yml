@@ -26,8 +26,8 @@ jobs:
         id: changelog
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          awk -v ver="## $VERSION" '
-            $0 ~ ver { capture=1; next }
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { capture=1; next }
             capture && /^## / { exit }
             capture { print }
           ' CHANGELOG.md > latest-changelog.md
