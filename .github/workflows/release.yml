@@ -22,12 +22,22 @@ jobs:
       - name: Build release archives
         run: npm run release:build
 
+      - name: Extract changelog for current version
+        id: changelog
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          awk -v ver="## $VERSION" '
+            $0 ~ ver { capture=1; next }
+            capture && /^## / { exit }
+            capture { print }
+          ' CHANGELOG.md > latest-changelog.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          generate_release_notes: true
+          body_path: latest-changelog.md
           files: |
             sync-in-server.zip
             sync-in-server.tar.gz
