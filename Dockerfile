@@ -22,6 +22,6 @@ COPY --from=build --chown=syncin:syncin build/environment/environment.dist.yaml 
 COPY --from=build --chown=syncin:syncin build/scripts/docker-sync-in-server.sh ./sync-in-server.sh
 ENV NODE_ENV=production
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
-EXPOSE 3000
+EXPOSE 8080
 USER syncin
 ENTRYPOINT ["/bin/sh", "sync-in-server.sh"]
