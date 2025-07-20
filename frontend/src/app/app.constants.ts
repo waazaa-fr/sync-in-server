@@ -5,7 +5,7 @@
  */
 
 import { faCircleHalfStroke } from '@fortawesome/free-solid-svg-icons'
-import { productName, version } from '../../package.json'
+import { productName, version } from '../../../package.json'
 import { AppMenu } from './layout/layout.interfaces'
 
 export const APP_NAME = productName

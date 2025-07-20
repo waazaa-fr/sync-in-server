@@ -1,4 +1,5 @@
 {
+  "productName": "Sync-in",
   "name": "sync-in-server",
   "version": "1.1.0",
   "description": "The secure, open-source platform for file storage, sharing, collaboration, and sync",
