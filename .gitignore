@@ -17,10 +17,15 @@ frontend/bazel-out
 /frontend/src/assets/codemirror/
 circular-dependencies.png
 <<<<<<< HEAD
+<<<<<<< HEAD
 .gitignore
 waazaa-tests/
 update-origin.sh
 push-waazaa.sh
+=======
+waazaa-tests/
+
+>>>>>>> origin/main
 =======
 waazaa-tests/
 
