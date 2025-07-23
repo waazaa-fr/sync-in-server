@@ -16,3 +16,7 @@ frontend/bazel-out
 /frontend/src/assets/pdfjs/
 /frontend/src/assets/codemirror/
 circular-dependencies.png
+.gitignore
+waazaa-tests/
+update-origin.sh
+push-waazaa.sh
